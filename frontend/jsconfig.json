@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".", // Base URL for resolving non-relative module names
+    "paths": {
+      // Define aliases for absolute imports
+      // This allows you to use e.g., `@/components/Navbar` instead of `../../components/Navbar`
+      "@/components/*": ["src/components/*"],
+      "@/lib/*": ["src/lib/*"],
+      "@/hooks/*": ["src/hooks/*"],
+      "@/app/*": ["src/app/*"],// Useful for importing pages as components if needed
+      "@/context/*": ["src/context/*"]
+    }
+  },
+  "include": ["src/**/*.js", "src/**/*.jsx"] // Files to include in the project context
+}

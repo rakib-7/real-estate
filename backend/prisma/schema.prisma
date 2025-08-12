@@ -1,0 +1,97 @@
+// backend/prisma/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// CORRECTED: UserRole enum
+enum UserRole {
+  ADMIN
+  USER
+}
+
+model User {
+  id          Int      @id @default(autoincrement())
+  email       String   @unique
+  password    String
+  role        UserRole @default(USER) // CORRECTED: Use UserRole enum
+  name        String?
+  phoneNumber String?
+  location    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  inquiries   Inquiry[]
+  bookmarks   Bookmark[]
+  properties  Property[] // NEW: User can have multiple properties
+}
+
+model Property {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String?
+  price       Float
+  location    String
+  type        String
+  category    String
+  images      Image[]
+  contactInfo String?
+  isFeatured  Boolean  @default(false)
+  status      String   @default("pending") // "pending", "approved", "rejected"
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  inquiries   Inquiry[]
+  bookmarks   Bookmark[]
+
+  userId      Int
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade) // NEW: User relation for property owner
+
+  
+
+}
+
+model Image {
+   id         Int      @id @default(autoincrement())
+  url        String
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  propertyId Int
+}
+
+// NEW: Banner Model
+model Banner {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String?
+  imageUrl    String   // URL to the image
+  linkUrl     String?
+  isActive    Boolean  @default(true)
+  position    String   @default("top") // top, side, bottom
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Inquiry {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  propertyId  Int
+  message     String
+  response    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  property    Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+}
+
+model Bookmark {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  propertyId  Int
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  property    Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, propertyId])
+}
