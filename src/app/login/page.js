@@ -1,54 +1,55 @@
 'use client';
-
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import AuthForm from '../../components/AuthForm';
 import Link from 'next/link';
+//import { useSimulatedRouter, SimulatedLink } from '@/hooks/useSimulatedRouter'; // Correct path
+import AuthForm from '@/components/auth/AuthForm'; // Correct path
+import { useAuth } from '@/context/AuthContext';
+import fetcher from '@/lib/api';
 
 export default function LoginPage() {
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const {login} = useAuth();
 
   const handleLogin = async (email, password) => {
+    setLoading(true);
     setError('');
     try {
-      // Assuming your backend runs on http://localhost:5000
-      const res = await fetch('http://localhost:5000/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
+      // const data = await fetcher('/auth/login', { // fetcher is globally available
+      //   method: 'POST',
+      //   body: JSON.stringify({ email, password }),
+      // });
 
-      const data = await res.json();
+      // localStorage.setItem('token', data.token);
+      // localStorage.setItem('userRole', data.role);
+      // localStorage.setItem('userId', data.userId);
 
-      if (!res.ok) {
-        throw new Error(data.error || 'Login failed. Please check your credentials.');
-      }
-
-      // Store token and user role in local storage
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('userRole', data.role);
-
-      // Redirect based on role 
-      if (data.role === 'admin') {
-        router.push('/dashboard/admin'); // Admin dashboard
+      const data = await login(email, password);
+      //if logged in as admin
+      if (data.role === 'ADMIN') {
+        router.push('/dashboard/admin/properties');
       } else {
-        router.push('/properties'); // User property Browse page
+        router.push('/properties');
       }
     } catch (err) {
-      setError(err.message);
+      setError(err.message || 'Login failed. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-        <h1 className="text-2xl font-bold mb-6 text-center">Login to Real Estate Portal</h1>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-purple-50 p-6">
+      <div className="bg-white p-12 rounded-2xl shadow-4xl w-full max-w-md border border-gray-100">
+        <h1 className="text-5xl font-bold mb-10 text-center text-gray-800 drop-shadow-sm">Welcome To Real Estate</h1>
         <AuthForm onSubmit={handleLogin} type="login" />
-        {error && <p className="text-red-500 text-center mt-4">{error}</p>}
-        <p className="text-center mt-4 text-sm text-gray-600">
+        {error && <p className="text-red-500 text-center mt-6 text-base font-medium">{error}</p>}
+        
+        <p className="text-center mt-8 text-base text-gray-600">
           Don't have an account?{' '}
-          <Link href="/signup" className="text-blue-600 hover:underline">
+          <Link href="/signup" className="text-indigo-600 hover:underline font-semibold"> 
             Sign Up
           </Link>
         </p>
