@@ -3,8 +3,8 @@ const express = require('express');
 const multer = require('multer');
 const path = require('path');
 const {
-  submitInquiry,
-  getUserInquiries,
+  //submitInquiry,
+  //getUserInquiries,
   bookmarkProperty,
   removeBookmark,
   getBookmarkedProperties,
@@ -50,9 +50,9 @@ router.use(authorizeRole(['USER', 'ADMIN'])); // User-specific routes can be acc
 router.get('/profile', getUserProfile);
 router.put('/profile', updateUserProfile);
 
-// Inquiry Management
-router.post('/inquiries', submitInquiry);
-router.get('/inquiries', getUserInquiries);
+// // Inquiry Management
+// router.post('/inquiries', submitInquiry);
+// router.get('/inquiries', getUserInquiries);
 
 // Bookmark Management
 router.post('/bookmarks', bookmarkProperty);

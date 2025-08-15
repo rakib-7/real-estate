@@ -1,48 +1,53 @@
-// src/app/signup/page.js
 'use client';
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-//import { useSimulatedRouter, SimulatedLink } from '@/hooks/useSimulatedRouter'; // Correct path
-import AuthForm from '@/components/auth/AuthForm'; // Correct path
 import fetcher from '@/lib/api';
+import AuthLayout from '@/components/auth/AuthLayout'; // Import the new layout
 
 export default function SignupPage() {
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-  const router = useRouter();
+    const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
+    const router = useRouter();
 
-  const handleSignup = async (email, password,name, phoneNumber, location) => {
-    setLoading(true);
-    setError('');
-    try {
-      await fetcher('/auth/register', { // fetcher is globally available
-        method: 'POST',
-        body: JSON.stringify({ email, password,name,phoneNumber, location }),
-      });
+    const [name, setName] = useState('');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [phoneNumber, setPhoneNumber] = useState('');
+    const [location, setLocation] = useState('');
 
-      alert('Registration successful! You can now log in.');
-      router.push('/login');
-    } catch (err) {
-      setError(err.message || 'Registration failed. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
+    const handleSignup = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        setError('');
+        try {
+            await fetcher('/auth/register', {
+                method: 'POST',
+                body: JSON.stringify({ name, email, password, phoneNumber, location }),
+            });
+            alert('Registration successful! You can now log in.');
+            router.push('/login');
+        } catch (err) {
+            setError(err.message || 'Registration failed. Please try again.');
+        } finally {
+            setLoading(false);
+        }
+    };
 
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-purple-50 p-6">
-      <div className="bg-white p-12 rounded-2xl shadow-4xl w-full max-w-md border border-gray-100">
-        <h1 className="text-5xl font-bold mb-10 text-center text-gray-800 drop-shadow-sm">Join Our Community!</h1>
-        <AuthForm onSubmit={handleSignup} type="signup" />
-        {error && <p className="text-red-500 text-center mt-6 text-base font-medium">{error}</p>}
-        <p className="text-center mt-8 text-base text-gray-600">
-          Already have an account?{' '}
-          <Link href="/login" className="text-indigo-600 hover:underline font-semibold"> {/* <--- CHANGE THIS */}
-            Login
-          </Link>
-        </p>
-      </div>
-    </div>
-  );
+    return (
+        <AuthLayout type="signup">
+            <div className="form-container sign-up">
+                <form onSubmit={handleSignup}>
+                    <h1>Create Account</h1>
+                    <span>or use your email for registration</span>
+                    <input type="text" placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} required />
+                    <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                    <input type="tel" placeholder="Phone Number" value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} required />
+                    <input type="text" placeholder="Location" value={location} onChange={(e) => setLocation(e.target.value)} />
+                    <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+                    {error && <p className="text-red-500 text-center mt-4 text-sm">{error}</p>}
+                    <button type="submit" disabled={loading}>{loading ? 'Creating Account...' : 'Sign Up'}</button>
+                </form>
+            </div>
+        </AuthLayout>
+    );
 }

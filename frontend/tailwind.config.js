@@ -2,6 +2,8 @@
 module.exports = {
   // These paths tell Tailwind CSS where your components and pages are,
   // so it can scan them for used utility classes and generate the necessary CSS.
+  darkMode: 'class', // Enable dark mode support
+
   content: [
     './src/**/*.{js,ts,jsx,tsx,mdx}',
     // './src/pages/**/*.{js,ts,jsx,tsx,mdx}',      // For pages in a 'pages' directory (if you used it)

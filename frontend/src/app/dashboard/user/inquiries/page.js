@@ -1,10 +1,68 @@
-// frontend/src/app/dashboard/user/inquiries/page.js
 'use client';
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import fetcher from '@/lib/api';
+import ChatInterface from '@/components/ChatInterface'; // ADDED: Import the new chat component
+
+export default function UserChatPage() { // RENAMED: from UserInquiriesPage
+    const router = useRouter();
+    const { user, isAuthenticated, isAdmin, loading: authLoading } = useAuth();
+    const [chatData, setChatData] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    useEffect(() => {
+        if (authLoading) return;
+        if (!isAuthenticated || isAdmin) {
+            router.push('/login');
+        } else {
+            fetchUserChat();
+        }
+    }, [isAuthenticated, isAdmin, authLoading, router]);
+
+    const fetchUserChat = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            // CORRECTED: Fetch the user's chat thread from the new endpoint
+            const data = await fetcher('/chats');
+            setChatData(data);
+        } catch (err)  {
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (authLoading || loading) {
+        return <div className="text-center p-8 text-xl text-gray-700">Loading your chat...</div>;
+    }
+
+    if (error) {
+        return <div className="text-center p-8 text-red-500 text-xl">Error: {error}</div>;
+    }
+
+    return (
+        <>
+            <h2 className="text-3xl font-bold mb-8 text-gray-800">Chat with Admin</h2>
+            {chatData ? (
+                <ChatInterface
+                    chatId={chatData.id}
+                    initialMessages={chatData.messages}
+                    recipientName="Admin Support"
+                />
+            ) : (
+                <p>Could not load chat.</p>
+            )}
+        </>
+    );
+}
+
+
+/*
+// --- OLD USER INQUIRIES PAGE CODE COMMENTED OUT ---
 
 export default function UserInquiriesPage() {
   const router = useRouter();
@@ -70,3 +128,4 @@ export default function UserInquiriesPage() {
     </>
   );
 }
+*/

@@ -8,17 +8,36 @@ import fetcher from '@/lib/api';
 import { API_BASE_URL } from '@/lib/api';
 
 // CORRECTED: Define an initial state object to easily reset the form.
+// const initialState = {
+//     title: '',
+//     description: '',
+//     price: '',
+//     location: '',
+//     type: 'rent',
+//     category: '',
+//     contactInfo: '',
+//     isFeatured: false,
+//     status: 'approved',
+//     images: null, // This will hold the FileList for new uploads
+//     acceptTerms: false,
+// };
+
 const initialState = {
     title: '',
     description: '',
     price: '',
-    location: '',
+    // ADDED: New structured location fields
+    address: '',
+    area: '',
+    city: '',
+    district: '',
+    division: '',
     type: 'rent',
     category: '',
     contactInfo: '',
     isFeatured: false,
     status: 'approved',
-    images: null, // This will hold the FileList for new uploads
+    images: null,
     acceptTerms: false,
 };
 
@@ -35,7 +54,12 @@ const AdminPropertyForm = ({ property, onSuccess, onCancel, isUserSubmission = f
                 title: property.title || '',
                 description: property.description || '',
                 price: property.price || '',
-                location: property.location || '',
+                //location: property.location || '',
+                address: property.address || '',
+                area: property.area || '',
+                city: property.city || '',
+                district: property.district || '',
+                division: property.division || '',
                 type: property.type || 'rent',
                 category: property.category || '',
                 contactInfo: property.contactInfo || '',
@@ -75,8 +99,13 @@ const AdminPropertyForm = ({ property, onSuccess, onCancel, isUserSubmission = f
 
         // CORRECTED: Validation should happen first. The backend requires these fields regardless of user type.
         // The concept of 'pending' is for admin approval, not for submitting incomplete data.
-        if (!formData.title || !formData.price || !formData.location || !formData.type) {
-            setError('Title, price, location, and type are required.');
+        // if (!formData.title || !formData.price || !formData.location || !formData.type) {
+        //     setError('Title, price, location, and type are required.');
+        //     setLoading(false);
+        //     return;
+        // }
+        if (!formData.title || !formData.price || !formData.type || !formData.area || !formData.city || !formData.district || !formData.division) {
+            setError('Title, price, type, and full location details (Division, District, City, Area) are required.');
             setLoading(false);
             return;
         }
@@ -87,7 +116,12 @@ const AdminPropertyForm = ({ property, onSuccess, onCancel, isUserSubmission = f
         formDataToSend.append('title', formData.title);
         formDataToSend.append('description', formData.description);
         formDataToSend.append('price', formData.price);
-        formDataToSend.append('location', formData.location);
+        //formDataToSend.append('location', formData.location);
+        formDataToSend.append('address', formData.address);
+        formDataToSend.append('area', formData.area);
+        formDataToSend.append('city', formData.city);
+        formDataToSend.append('district', formData.district);
+        formDataToSend.append('division', formData.division);
         formDataToSend.append('type', formData.type);
         formDataToSend.append('category', formData.category);
         formDataToSend.append('contactInfo', formData.contactInfo);
@@ -167,7 +201,18 @@ const AdminPropertyForm = ({ property, onSuccess, onCancel, isUserSubmission = f
                 ></textarea>
             </div>
             <Input label="Price" type="number" name="price" value={formData.price} onChange={handleChange} required />
-            <Input label="Location" type="text" name="location" value={formData.location} onChange={handleChange} required />
+            {/* <Input label="Location" type="text" name="location" value={formData.location} onChange={handleChange} required /> */}
+             {/* --- ADDED: New structured location inputs --- */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Input label="Division" type="text" name="division" value={formData.division} onChange={handleChange} required placeholder="e.g., Chittagong" />
+                <Input label="District" type="text" name="district" value={formData.district} onChange={handleChange} required placeholder="e.g., Chittagong" />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Input label="City / Thana" type="text" name="city" value={formData.city} onChange={handleChange} required placeholder="e.g., Panchlaish" />
+                <Input label="Area" type="text" name="area" value={formData.area} onChange={handleChange} required placeholder="e.g., Nasirabad H/S" />
+            </div>
+            <Input label="Address (Optional)" type="text" name="address" value={formData.address} onChange={handleChange} placeholder="e.g., House 123, Road 4" />
+            {/* --- End of new location inputs --- */}
             <div className="mb-5">
                 <label htmlFor="type" className="block text-base font-medium text-gray-700 mb-2">Type</label>
                 <select

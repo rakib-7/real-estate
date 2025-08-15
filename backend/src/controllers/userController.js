@@ -45,47 +45,116 @@ exports.updateUserProfile = async (req, res) => {
 };
 
 // --- Inquiry Management ---
-exports.submitInquiry = async (req, res) => {
-  const { propertyId, message } = req.body;
-  const userId = req.user.userId;
+// exports.submitInquiry = async (req, res) => {
+//   const { propertyId, message } = req.body;
+//   const userId = req.user.userId;
 
-  if (!propertyId || !message) {
-    return res.status(400).json({ error: 'Property ID and message are required.' });
-  }
+//   if (!propertyId || !message) {
+//     return res.status(400).json({ error: 'Property ID and message are required.' });
+//   }
 
-  try {
-    const newInquiry = await prisma.inquiry.create({
-      data: {
-        userId,
-        propertyId: parseInt(propertyId),
-        message,
-      },
-    });
-    res.status(201).json(newInquiry);
-  } catch (error) {
-    console.error('Error submitting inquiry:', error);
-    res.status(500).json({ error: 'Failed to submit inquiry.' });
-  }
-};
+//   try {
+//     const newInquiry = await prisma.inquiry.create({
+//       data: {
+//         userId,
+//         propertyId: parseInt(propertyId),
+//         message,
+//       },
+//     });
+//     res.status(201).json(newInquiry);
+//   } catch (error) {
+//     console.error('Error submitting inquiry:', error);
+//     res.status(500).json({ error: 'Failed to submit inquiry.' });
+//   }
+// };
 
-exports.getUserInquiries = async (req, res) => {
-  const userId = req.user.userId;
-  try {
-    const inquiries = await prisma.inquiry.findMany({
-      where: { userId },
-      include: {
-        property: {
-          select: { id: true, title: true, location: true, price: true, images: true }
+// exports.getUserInquiries = async (req, res) => {
+//   const userId = req.user.userId;
+//   try {
+//     const inquiries = await prisma.inquiry.findMany({
+//       where: { userId },
+//       include: {
+//         property: {
+//           select: { id: true, title: true,
+//             //  location: true,
+//             area: true, city: true, district: true, division: true,
+//               price: true, images: true }
+//         }
+//       },
+//       orderBy: { createdAt: 'desc' }
+//     });
+//     res.status(200).json(inquiries);
+//   } catch (error) {
+//     console.error('Error fetching user inquiries:', error);
+//     res.status(500).json({ error: 'Failed to retrieve your inquiries.' });
+//   }
+// };
+
+// --- ADDED: New Chat functions for Users ---
+
+/**
+ * Gets the user's chat history. If a chat doesn't exist, it creates one.
+ */
+exports.getOrCreateUserChat = async (req, res) => {
+    const userId = req.user.userId;
+    try {
+        let chat = await prisma.chat.findUnique({
+            where: { userId },
+            include: {
+                messages: {
+                    orderBy: { createdAt: 'asc' },
+                    include: {
+                        sender: { select: { id: true, name: true, role: true } }
+                    }
+                }
+            }
+        });
+
+        // If the user has never chatted before, create a new chat thread for them.
+        if (!chat) {
+            chat = await prisma.chat.create({
+                data: {
+                    userId: userId
+                },
+                include: { messages: true } // Include empty messages array
+            });
         }
-      },
-      orderBy: { createdAt: 'desc' }
-    });
-    res.status(200).json(inquiries);
-  } catch (error) {
-    console.error('Error fetching user inquiries:', error);
-    res.status(500).json({ error: 'Failed to retrieve your inquiries.' });
-  }
+        res.status(200).json(chat);
+    } catch (error) {
+        console.error('Error getting or creating user chat:', error);
+        res.status(500).json({ error: 'Failed to retrieve chat.' });
+    }
 };
+
+/**
+ * A user (or admin) posts a new message to a chat.
+ */
+exports.postMessage = async (req, res) => {
+    const senderId = req.user.userId; // The person sending the message
+    const { content, chatId } = req.body;
+
+    if (!content || !chatId) {
+        return res.status(400).json({ error: 'Content and chatId are required.' });
+    }
+
+    try {
+        const message = await prisma.message.create({
+            data: {
+                content,
+                chatId: parseInt(chatId),
+                senderId: senderId
+            },
+            include: {
+                sender: { select: { id: true, name: true, role: true } }
+            }
+        });
+        res.status(201).json(message);
+    } catch (error) {
+        console.error('Error posting message:', error);
+        res.status(500).json({ error: 'Failed to send message.' });
+    }
+};
+
 
 // --- Bookmark Management ---
 exports.bookmarkProperty = async (req, res) => {
@@ -149,12 +218,18 @@ exports.getBookmarkedProperties = async (req, res) => {
 
 // --- User-Added Properties ---
 exports.createPropertyByUser = async (req, res) => {
-    const { title, description, price, location, type, category, contactInfo, isFeatured } = req.body;
+    const { title, description, price, address, area, city, district, division, type, category, contactInfo, isFeatured } = req.body;
     const userId = req.user.userId; // Get user ID from the authenticated token
     const imageUrls = req.files ? req.files.map(file => `/uploads/properties/${file.filename}`) : [];
 
-    if (!title || !price || !location || !type) {
-        return res.status(400).json({ error: 'Title, price, location, and type are required.' });
+    // COMMENTED OUT: Old validation.
+    // if (!title || !price || !location || !type) {
+    //     return res.status(400).json({ error: 'Title, price, location, and type are required.' });
+    // }
+
+    // CORRECTED: New validation for essential location fields.
+    if (!title || !price || !type || !area || !city || !district || !division) {
+        return res.status(400).json({ error: 'Title, price, type, area, city, district, and division are required.' });
     }
 
     try {
@@ -163,7 +238,12 @@ exports.createPropertyByUser = async (req, res) => {
                 title,
                 description,
                 price: parseFloat(price),
-                location,
+                // location,
+                address,
+                area,
+                city,
+                district,
+                division,
                 type,
                 category,
                 contactInfo: contactInfo || req.user.email, // Can still store public contact info
@@ -285,7 +365,7 @@ exports.getPropertiesCreatedByUser = async (req, res) => {
 // };
 exports.updatePropertyByUser = async (req, res) => {
     const { id } = req.params;
-    const { title, description, price, location, type, category, contactInfo, isFeatured } = req.body;
+    const { title, description, price, address, area, city, district, division, type, category, contactInfo, isFeatured } = req.body;
     const userId = req.user.userId;
     const newImageUrls = req.files ? req.files.map(file => `/uploads/properties/${file.filename}`) : [];
 
@@ -323,7 +403,12 @@ exports.updatePropertyByUser = async (req, res) => {
                 title,
                 description,
                 price: parseFloat(price),
-                location,
+                // location,
+                address,
+                area,
+                city,
+                district,
+                division,
                 type,
                 category,
                 contactInfo,

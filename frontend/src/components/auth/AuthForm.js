@@ -4,6 +4,7 @@
 import React, { useState } from 'react'; // Ensure React and useState are imported
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
+import Link from 'next/link';
 
 const AuthForm = ({ onSubmit, type }) => {
   const [email, setEmail] = useState('');
@@ -12,7 +13,7 @@ const AuthForm = ({ onSubmit, type }) => {
   const [name, setName] = useState(''); // State for name field
   const [phoneNumber, setPhoneNumber] = useState(''); // State for phone number
   const [location, setLocation] = useState('');     // State for location
-
+  const [agreedToTerms, setAgreedToTerms] = useState(false); // State for terms agreement
   const isLogin = type === 'login'; // Determines if it's a login or signup form
 
   const handleSubmit = (e) => {
@@ -27,6 +28,10 @@ const AuthForm = ({ onSubmit, type }) => {
         alert('Full Name is required for registration.');
         return;
     }
+    if (!isLogin && !phoneNumber.trim()) {
+                alert('Phone Number is required for registration.');
+                return;
+            }
 
     // Call the onSubmit prop function with the appropriate data
     // For signup, pass all fields; for login, only email and password
@@ -38,7 +43,7 @@ const AuthForm = ({ onSubmit, type }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit} className='space-y-6'>
       {/* Conditional rendering for signup-specific fields */}
       {!isLogin && (
         // React Fragment <>...</> is used to group multiple elements without adding an extra DOM node.
@@ -51,22 +56,23 @@ const AuthForm = ({ onSubmit, type }) => {
             name="name"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="John Doe"
+            placeholder="Mohammad Rakib" // Placeholder text for full name
             required // Name is now required for signup
-            className="mb-4"
+            //className="mb-4"
           />
           <Input
-            label="Phone Number (Optional)"
+            label="Phone Number"
             type="tel" // Use type="tel" for phone numbers
             id="phoneNumber"
             name="phoneNumber"
             value={phoneNumber}
             onChange={(e) => setPhoneNumber(e.target.value)}
             placeholder="+8801XXXXXXXXX"
-            className="mb-4"
+            required
+            //className="mb-4"
           />
           <Input
-            label="Location (Optional)"
+            label="Location"
             type="text"
             id="location"
             name="location"
@@ -116,10 +122,35 @@ const AuthForm = ({ onSubmit, type }) => {
         />
       )}
 
+      {!isLogin && (
+                <div className="flex items-center">
+                    <input
+                        id="terms"
+                        name="terms"
+                        type="checkbox"
+                        checked={agreedToTerms}
+                        onChange={(e) => setAgreedToTerms(e.target.checked)}
+                        className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                    />
+                    <label htmlFor="terms" className="ml-2 block text-sm text-gray-900">
+                        I agree to the{' '}
+                        <Link href="/terms-and-conditions" className="font-medium text-indigo-600 hover:underline" target="_blank">
+                            Terms & Conditions
+                        </Link>
+                        .
+                    </label>
+                </div>
+            )}
+
       {/* Submit Button */}
-      <Button type="submit" className="w-full mt-8 bg-indigo-700 hover:bg-indigo-800">
-        {isLogin ? 'Login ' : 'Create Account'}
-      </Button>
+      <Button 
+                type="submit" 
+                className="w-full mt-8 bg-indigo-700 hover:bg-indigo-800"
+                // The button is disabled if it's a signup form and the user hasn't agreed to the terms.
+                disabled={!isLogin && !agreedToTerms}
+            >
+                {isLogin ? 'Login' : 'Create Account'}
+            </Button>
     </form>
   );
 };

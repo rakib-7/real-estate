@@ -24,9 +24,11 @@ model User {
   location    String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  inquiries   Inquiry[]
+  //inquiries   Inquiry[]
   bookmarks   Bookmark[]
   properties  Property[] // NEW: User can have multiple properties
+  chat        Chat? // NEW: User can have multiple chats
+  sentMessages Message[]  @relation("sentMessages")  // NEW: Messages sent by the user
 }
 
 model Property {
@@ -34,7 +36,14 @@ model Property {
   title       String
   description String?
   price       Float
-  location    String
+  //location    String
+    
+  // ADDED: Structured location fields for advanced searching in Bangladesh.
+  address     String?  // Full address line, e.g., "House 123, Road 4, Block B"
+  area        String?  // Neighborhood or area, e.g., "Bashundhara R/A", "Gulshan 1"
+  city        String?  // e.g., "Dhaka", "Chittagong"
+  district    String?   // e.g., "Dhaka", "Cox's Bazar"
+  division    String?   // e.g., "Dhaka", "Chittagong"
   type        String
   category    String
   images      Image[]
@@ -43,7 +52,7 @@ model Property {
   status      String   @default("pending") // "pending", "approved", "rejected"
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  inquiries   Inquiry[]
+  //inquiries   Inquiry[]
   bookmarks   Bookmark[]
 
   userId      Int
@@ -73,16 +82,39 @@ model Banner {
   updatedAt   DateTime @updatedAt
 }
 
-model Inquiry {
-  id          Int      @id @default(autoincrement())
-  userId      Int
-  propertyId  Int
-  message     String
-  response    String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  property    Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+// model Inquiry {
+//   id          Int      @id @default(autoincrement())
+//   userId      Int
+//   propertyId  Int
+//   message     String
+//   response    String?
+//   createdAt   DateTime @default(now())
+//   updatedAt   DateTime @updatedAt
+//   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+//   property    Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+// }
+model Chat {
+  id          Int       @id @default(autoincrement())
+  
+  userId      Int       @unique // Each user has exactly one chat thread.
+  user        User      @relation(fields: [userId], references: [id])
+  
+  messages    Message[] // A chat contains many messages.
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Message {
+  id        Int      @id @default(autoincrement())
+  content   String
+  createdAt DateTime @default(now())
+
+  chatId    Int
+  chat      Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
+
+  // This ID links to the User model. We can check the sender's role to see if it's an admin.
+  senderId  Int
+  sender    User     @relation(name: "sentMessages", fields: [senderId], references: [id], onDelete: Cascade)
 }
 
 model Bookmark {

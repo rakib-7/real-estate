@@ -21,7 +21,7 @@ export default function RootLayout({ children }) {
         {/* <title> and <meta name="description"> are handled by Next.js metadata export */}
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
       </head>
-      <body className="font-inter antialiased">
+      <body className="font-inter antialiased bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
         <ClientAuthWrapper> {/* NEW: Use the client wrapper here */}
           {children}
         </ClientAuthWrapper>
