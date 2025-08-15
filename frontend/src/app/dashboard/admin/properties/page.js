@@ -4,7 +4,8 @@ import React, { useState, useEffect } from 'react';
 // useRouter and useAuth are handled by AdminLayout
 import AdminPropertyForm from '@/components/AdminPropertyForm';
 import Button from '@/components/ui/Button';
-import { formatPrice } from '@/lib/utils';
+//import { formatPrice } from '@/lib/utils';
+import { formatBdtPrice } from '@/lib/utils'; // Use the updated format function
 import fetcher from '@/lib/api';
 
 export default function AdminPropertiesPage() {
@@ -109,7 +110,7 @@ export default function AdminPropertiesPage() {
               <li key={property.id} className="px-6 py-5 sm:px-8 flex flex-col sm:flex-row justify-between items-start sm:items-center hover:bg-gray-50 transition-colors duration-150">
                 <div className="flex-grow mb-3 sm:mb-0">
                   <p className="text-xl font-medium text-gray-900 leading-tight">{property.title}</p>
-                  <p className="text-base text-gray-600 mt-1">{property.location} - {formatPrice(property.price)}</p>
+                  <p className="text-base text-gray-600 mt-1">{property.location} - {formatBdtPrice(property.price)}</p>
                 </div>
                 <div className="flex space-x-3">
                   {property.status === 'pending' && ( // Show Approve/Reject only for pending

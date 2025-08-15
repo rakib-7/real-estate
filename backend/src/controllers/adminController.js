@@ -117,38 +117,99 @@ exports.deleteUserByAdmin = async (req, res) => {
 };
 
 // --- Inquiry Management ---
-exports.getInquiries = async (req, res) => {
-  try {
-    const inquiries = await prisma.inquiry.findMany({
-      include: {
-        user: { select: { id: true, email: true, name: true } },
-        property: { select: { id: true, title: true, location: true, price: true } }
-      },
-      orderBy: { createdAt: 'desc' }
-    });
-    res.status(200).json(inquiries);
-  } catch (error) {
-    console.error('Error fetching inquiries:', error);
-    res.status(500).json({ error: 'Failed to retrieve inquiries.' });
-  }
+// exports.getInquiries = async (req, res) => {
+//   try {
+//     const inquiries = await prisma.inquiry.findMany({
+//       include: {
+//         user: { select: { id: true, email: true, name: true } },
+//         property: { select: { id: true, title: true,
+//            //location: true,
+//             area: true,
+//             city: true,
+            
+            
+//             contactInfo: true,
+            
+//             price: true } }
+//       },
+//       orderBy: { createdAt: 'desc' }
+//     });
+//     res.status(200).json(inquiries);
+//   } catch (error) {
+//     console.error('Error fetching inquiries:', error);
+//     res.status(500).json({ error: 'Failed to retrieve inquiries.' });
+//   }
+// };
+
+// exports.respondToInquiry = async (req, res) => {
+//   const { id } = req.params;
+//   const { response } = req.body;
+//   if (!response) {
+//     return res.status(400).json({ error: 'Response message is required.' });
+//   }
+//   try {
+//     const updatedInquiry = await prisma.inquiry.update({
+//       where: { id: parseInt(id) },
+//       data: { response },
+//     });
+//     res.status(200).json(updatedInquiry);
+//   } catch (error) {
+//     console.error('Error responding to inquiry:', error);
+//     res.status(500).json({ error: 'Failed to update inquiry response.' });
+//   }
+// };
+
+// --- ADDED: New Chat Management functions for Admins ---
+
+/**
+ * Admin gets a list of all user chat threads.
+ */
+exports.getAllChatsForAdmin = async (req, res) => {
+    try {
+        const chats = await prisma.chat.findMany({
+            orderBy: { updatedAt: 'desc' },
+            include: {
+                user: { // Include info about the user who started the chat
+                    select: { id: true, name: true, email: true }
+                },
+                _count: { // Count how many messages are in the chat
+                    select: { messages: true }
+                }
+            }
+        });
+        res.status(200).json(chats);
+    } catch (error) {
+        console.error('Error fetching all chats for admin:', error);
+        res.status(500).json({ error: 'Failed to retrieve chats.' });
+    }
 };
 
-exports.respondToInquiry = async (req, res) => {
-  const { id } = req.params;
-  const { response } = req.body;
-  if (!response) {
-    return res.status(400).json({ error: 'Response message is required.' });
-  }
-  try {
-    const updatedInquiry = await prisma.inquiry.update({
-      where: { id: parseInt(id) },
-      data: { response },
-    });
-    res.status(200).json(updatedInquiry);
-  } catch (error) {
-    console.error('Error responding to inquiry:', error);
-    res.status(500).json({ error: 'Failed to update inquiry response.' });
-  }
+/**
+ * Admin gets the message history for a specific user's chat.
+ */
+exports.getChatMessagesForAdmin = async (req, res) => {
+    const { userId } = req.params; // Get the user's ID from the URL
+    try {
+        const chat = await prisma.chat.findUnique({
+            where: { userId: parseInt(userId) },
+            include: {
+                messages: {
+                    orderBy: { createdAt: 'asc' },
+                    include: {
+                        sender: { select: { id: true, name: true, role: true } }
+                    }
+                }
+            }
+        });
+
+        if (!chat) {
+            return res.status(404).json({ error: 'Chat not found for this user.' });
+        }
+        res.status(200).json(chat.messages);
+    } catch (error) {
+        console.error('Error fetching chat messages for admin:', error);
+        res.status(500).json({ error: 'Failed to retrieve messages.' });
+    }
 };
 
 // --- Banner Management ---
@@ -333,7 +394,8 @@ exports.getSiteAnalytics = async (req, res) => {
   try {
     const totalUsers = await prisma.user.count();
     const totalProperties = await prisma.property.count();
-    const totalInquiries = await prisma.inquiry.count();
+    //const totalInquiries = await prisma.inquiry.count();
+    const totalChats = await prisma.chat.count();
     const totalBanners = await prisma.banner.count();
     const featuredProperties = await prisma.property.count({ where: { isFeatured: true } });
 
@@ -350,25 +412,36 @@ exports.getSiteAnalytics = async (req, res) => {
       select: { id: true, title: true, price: true, createdAt: true }
     });
 
-    const recentInquiries = await prisma.inquiry.findMany({
-      take: 5,
-      orderBy: { createdAt: 'desc' },
-      include: {
-        user: { select: { email: true, name: true } },
-        property: { select: { title: true } }
-      }
-    });
+    // const recentInquiries = await prisma.inquiry.findMany({
+    //   take: 5,
+    //   orderBy: { createdAt: 'desc' },
+    //   include: {
+    //     user: { select: { email: true, name: true } },
+    //     property: { select: { title: true } }
+    //   }
+    // });
+
+    const recentChats = await prisma.chat.findMany({
+            take: 5,
+            orderBy: { updatedAt: 'desc' },
+            include: {
+                user: { select: { email: true, name: true } },
+                _count: { select: { messages: true } }
+            }
+        });
 
     res.status(200).json({
       totalUsers,
       totalProperties,
-      totalInquiries,
+      //totalInquiries,
+      totalChats,
       totalBanners,
       featuredPropertiesCount: featuredProperties,
       recentActivity: {
         users: recentUsers,
         properties: recentProperties,
-        inquiries: recentInquiries
+        //inquiries: recentInquiries
+        chats: recentChats
       }
     });
   } catch (error) {

@@ -7,7 +7,8 @@ import AdminPropertyForm from '@/components/AdminPropertyForm'; // Reuse the for
 import { useAuth } from '@/context/AuthContext';
 import fetcher from '@/lib/api';
 import Button from '@/components/ui/Button'; // Assuming Button is available
-import { formatPrice } from '@/lib/utils';
+//import { formatPrice } from '@/lib/utils';
+import { formatBdtPrice } from '@/lib/utils'; // Use the updated format function
 import Link from 'next/link';
 
 export default function MyPropertiesPage() {
@@ -117,7 +118,7 @@ export default function MyPropertiesPage() {
               <li key={property.id} className="px-6 py-5 sm:px-8 flex flex-col sm:flex-row justify-between items-start sm:items-center hover:bg-gray-50 transition-colors duration-150">
                 <div className="flex-grow mb-3 sm:mb-0">
                   <p className="text-xl font-medium text-gray-900 leading-tight">{property.title} <span className={`ml-2 px-2.5 py-1 rounded-full text-xs font-semibold ${property.status === 'approved' ? 'bg-green-100 text-green-800' : property.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}`}>{property.status.toUpperCase()}</span></p>
-                  <p className="text-base text-gray-600 mt-1">{property.location} - {formatPrice(property.price)}</p>
+                  <p className="text-base text-gray-600 mt-1">{property.location} - {formatBdtPrice(property.price)}</p>
                 </div>
                 <div className="flex space-x-3">
                   <Button

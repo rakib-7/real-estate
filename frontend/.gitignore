@@ -1,9 +1,0 @@
-# Dependencies
-node_modules
-
-# Build files
-.next
-out
-
-# Local environment variables
-.env.local

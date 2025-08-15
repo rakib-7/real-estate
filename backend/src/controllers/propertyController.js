@@ -20,16 +20,40 @@ function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
 
 // --- Public Property Methods ---
 exports.getAllProperties = async (req, res) => {
-  const { location, minPrice, maxPrice, type, category, nearLocation, suggestedByBookmarks } = req.query;
+  //const { division, district, city, area, minPrice, maxPrice, type, category, suggestedByBookmarks } = req.query;
+  const { location, minPrice, maxPrice, type, category, isFeatured,suggestedByBookmarks } = req.query;
   const userId = req.user ? req.user.userId : null;
-
+  const user = req.user;
   const where = {
     status: 'approved'
   };
 
+  // if (location) {
+  //   where.location = { contains: location, mode: 'insensitive' };
+  // }
+  // if (division) where.division = { equals: division, mode: 'insensitive' };
+  // if (district) where.district = { equals: district, mode: 'insensitive' };
+  // if (city) where.city = { equals: city, mode: 'insensitive' };
+  // //if (area) where.area = { contains: area, mode: 'insensitive' }; // 'contains' is good for area search
+  // if (area) {
+  //       where.OR = [
+  //           { area: { contains: area, mode: 'insensitive' } },
+  //           { city: { contains: area, mode: 'insensitive' } },
+  //           { district: { contains: area, mode: 'insensitive' } },
+  //           { division: { contains: area, mode: 'insensitive' } }
+  //       ];
+  //   }
   if (location) {
-    where.location = { contains: location, mode: 'insensitive' };
-  }
+        // This tells Prisma to search for the 'location' text in any of the
+        // structured address fields, making the search powerful and flexible.
+        where.OR = [
+            { address: { contains: location, mode: 'insensitive' } },
+            { area: { contains: location, mode: 'insensitive' } },
+            { city: { contains: location, mode: 'insensitive' } },
+            { district: { contains: location, mode: 'insensitive' } },
+            { division: { contains: location, mode: 'insensitive' } },
+        ];
+    }
   if (minPrice) {
     where.price = { gte: parseFloat(minPrice) };
   }
@@ -46,9 +70,9 @@ exports.getAllProperties = async (req, res) => {
   try {
     let properties = await prisma.property.findMany({ where, include: { images: true } });
 
-    if (nearLocation) {
-        properties = properties.filter(p => p.location.toLowerCase().includes(nearLocation.toLowerCase()));
-    }
+    // if (nearLocation) {
+    //     properties = properties.filter(p => p.location.toLowerCase().includes(nearLocation.toLowerCase()));
+    // }
 
     if (suggestedByBookmarks === 'true' && userId) {
         const bookmarkedProperties = await prisma.bookmark.findMany({
@@ -79,6 +103,9 @@ exports.getAllProperties = async (req, res) => {
         [...properties, ...suggested].forEach(p => uniqueProperties.set(p.id, p));
         properties = Array.from(uniqueProperties.values());
     }
+    if (!user || user.role !== 'ADMIN') {
+            properties.forEach(p => {delete p.contactInfo});
+        }
 
     res.status(200).json(properties);
   } catch (error) {
@@ -89,6 +116,7 @@ exports.getAllProperties = async (req, res) => {
 
 exports.getPropertyById = async (req, res) => {
   const { id } = req.params;
+  const user = req.user;
   try {
     const property = await prisma.property.findUnique({
       where: { id: parseInt(id)},
@@ -97,9 +125,18 @@ exports.getPropertyById = async (req, res) => {
     if (!property) {
       return res.status(404).json({ error: 'Property not found.' });
     }
+
+    const isOwner = user && user.userId === property.userId;
+    const isAdmin = user && user.role === 'ADMIN';
+
     if (property.status !== 'approved' && (!req.user || req.user.role !== 'ADMIN')) {
         return res.status(404).json({ error: 'Property not found or not yet approved.' });
     }
+// ADDED: Hide contactInfo from non-admins, as per business plan.
+    if (!isAdmin) {
+        delete property.contactInfo;
+    }
+
     res.status(200).json(property);
   } catch (error) {
     console.error('Error fetching property by ID:', error);
@@ -112,14 +149,17 @@ exports.createProperty = async (req, res) => {
   // Get text fields from req.body
   const {userId} = req.user; // Get userId from authenticated user
   
-  const { title, description, price, location, type, category, contactInfo, isFeatured,status } = req.body;
-  
+  //const { title, description, price, location, type, category, contactInfo, isFeatured,status } = req.body;
+  const { title, description, price, address, area, city, district, division, type, category, contactInfo, isFeatured, status } = req.body;
   // Get image URLs from req.files
   const imageUrls = req.files ? req.files.map(file => `/uploads/properties/${file.filename}`) : [];
 
-  if (!title || !price || !location || !type) {
-    return res.status(400).json({ error: 'Title, price, location, and type are required.' });
-  }
+  // if (!title || !price || !location || !type) {
+  //   return res.status(400).json({ error: 'Title, price, location, and type are required.' });
+  // }
+  if (!title || !price || !type || !area || !city || !district || !division) {
+        return res.status(400).json({ error: 'Title, price, type, and full location details are required.' });
+    }
   
   try {
     const newProperty = await prisma.property.create({
@@ -127,7 +167,12 @@ exports.createProperty = async (req, res) => {
         title, 
         description, 
         price: parseFloat(price), 
-        location, 
+        // location, 
+        address,
+        area,
+        city,
+        district,
+        division,
         type, 
         category,
         contactInfo, 
@@ -152,8 +197,9 @@ exports.createProperty = async (req, res) => {
 
 exports.updateProperty = async (req, res) => {
   const { id } = req.params;
-  const { title, description, price, location, type, category, contactInfo, isFeatured, status } = req.body;
-  
+  //const { title, description, price, location, type, category, contactInfo, isFeatured, status } = req.body;
+  const { title, description, price, address, area, city, district, division, type, category, contactInfo, isFeatured, status } = req.body;
+    
   // Get image URLs from req.files if new files are uploaded
   const newImageUrls = req.files ? req.files.map(file => `/uploads/properties/${file.filename}`) : [];
 
@@ -176,7 +222,12 @@ exports.updateProperty = async (req, res) => {
         title, 
         description, 
         price: parseFloat(price), 
-        location, 
+        // location, 
+        address,
+        area,
+        city,
+        district,
+        division,
         type, 
         category,
         contactInfo, 

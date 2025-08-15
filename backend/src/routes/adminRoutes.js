@@ -5,7 +5,8 @@ const multer = require('multer');
 const path = require('path');
 const { createProperty, updateProperty, deleteProperty } = require('../controllers/propertyController.js');
 const {
-  getInquiries, respondToInquiry,uploadBanner,
+  // getInquiries, respondToInquiry,
+  uploadBanner,
   createAdminUser, getAllUsers, updateUserByAdmin, deleteUserByAdmin, // User Management
   getSiteAnalytics, // Analytics
   getAllPropertiesAdmin,
@@ -65,9 +66,9 @@ router.put('/properties/:id',upload.array('images', 10), updateProperty);
 router.delete('/properties/:id', deleteProperty);
 router.put('/properties/:id/status', updatePropertyStatus);
 
-// Inquiry Management
-router.get('/inquiries', getInquiries);
-router.put('/inquiries/:id/respond', respondToInquiry);
+// // Inquiry Management
+// router.get('/inquiries', getInquiries);
+// router.put('/inquiries/:id/respond', respondToInquiry);
 
 // Banner Management
 router.get('/banners', getAllBanners);

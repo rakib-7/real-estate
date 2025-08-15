@@ -7,8 +7,8 @@ const prisma = new PrismaClient();
 
 exports.register = async (req, res) => {
   const { email, password,name, phoneNumber, location } = req.body;
-  if (!email || !password) {
-    return res.status(400).json({ error: 'Email and password are required.' });
+  if (!email || !password || !phoneNumber) {
+    return res.status(400).json({ error: 'Email, password and phone number are required.' });
   }
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -18,7 +18,7 @@ exports.register = async (req, res) => {
         password: hashedPassword,
         role: 'USER', // Default role for new registrations
         name,
-        phoneNumber: phoneNumber || null,
+        phoneNumber: phoneNumber ,
         location: location || null,
       },
     });

@@ -1,9 +1,99 @@
-// frontend/src/app/dashboard/admin/inquiries/page.js
 'use client';
 import React, { useState, useEffect } from 'react';
-// useRouter and useAuth are handled by AdminLayout
-import InquiryItem from '@/components/InquiryItem';
 import fetcher from '@/lib/api';
+import ChatInterface from '@/components/ChatInterface';
+
+export default function AdminChatPage() { 
+    const [chats, setChats] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [selectedChat, setSelectedChat] = useState(null);
+    const [messages, setMessages] = useState([]);
+
+    useEffect(() => {
+        fetchChats();
+    }, []);
+
+    const fetchChats = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            // This now calls the correct endpoint for the admin chat list
+            const data = await fetcher('/chats/admin/all');
+            setChats(data);
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleSelectChat = async (chat) => {
+        setSelectedChat(chat);
+        try {
+            // This calls the correct endpoint for a specific user's messages
+            const messageData = await fetcher(`/chats/admin/${chat.userId}`);
+            setMessages(messageData);
+        } catch (err) {
+            setError(`Failed to load messages for ${chat.user.name}: ${err.message}`);
+            setMessages([]);
+        }
+    };
+
+    if (loading) {
+        return <p className="text-center p-8 text-xl text-gray-700">Loading user chats...</p>;
+    }
+
+    if (error) {
+        return <p className="text-center p-8 text-red-500 text-xl">Error: {error}</p>;
+    }
+
+    return (
+        <>
+            <h2 className="text-3xl font-bold mb-8 text-gray-800">Live Chat Support</h2>
+            <div className="flex h-[75vh] border rounded-lg bg-white">
+                {/* Sidebar with a list of user chats */}
+                <div className="w-1/3 border-r bg-gray-50 overflow-y-auto">
+                    {chats.length === 0 ? (
+                        <p className="p-4 text-gray-500">No active chats.</p>
+                    ) : (
+                        <ul>
+                            {chats.map(chat => (
+                                <li
+                                    key={chat.id}
+                                    onClick={() => handleSelectChat(chat)}
+                                    className={`p-4 cursor-pointer hover:bg-indigo-100 transition-colors duration-200 ${selectedChat?.id === chat.id ? 'bg-indigo-200 font-semibold' : ''}`}
+                                >
+                                    <p className="text-gray-800">{chat.user.name || chat.user.email}</p>
+                                    <p className="text-sm text-gray-600">{chat._count.messages} messages</p>
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+                </div>
+                {/* Main chat window */}
+                <div className="w-2/3 flex flex-col">
+                    {selectedChat ? (
+                        <ChatInterface
+                            chatId={selectedChat.id}
+                            initialMessages={messages}
+                            recipientName={selectedChat.user.name || selectedChat.user.email}
+                        />
+                    ) : (
+                        <div className="flex items-center justify-center h-full">
+                            <p className="text-gray-500 text-lg">Select a chat to view messages</p>
+                        </div>
+                    )}
+                </div>
+            </div>
+        </>
+    );
+}
+
+/*
+// --- OLD ADMIN INQUIRIES PAGE CODE COMMENTED OUT ---
+
+import InquiryItem from '@/components/InquiryItem';
 
 export default function AdminInquiriesPage() {
   const [inquiries, setInquiries] = useState([]);
@@ -27,7 +117,7 @@ export default function AdminInquiriesPage() {
         filteredData = data.filter(inq => inq.response === null || inq.response === '');
       }
       setInquiries(filteredData);
-    } catch (err) {
+    } catch (err) => {
       setError(err.message);
     } finally {
       setLoading(false);
@@ -72,3 +162,4 @@ export default function AdminInquiriesPage() {
     </>
   );
 }
+*/
