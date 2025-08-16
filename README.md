@@ -1,6 +1,6 @@
 # RealEstate - A Modern Real Estate Platform for Bangladesh
 
-RealEstatePro is a full-stack web application designed to modernize the property buying, selling, and renting experience in Bangladesh. The platform connects property owners and agents with potential buyers and tenants through a user-friendly, mobile-first interface. Key features include detailed property listings, advanced search functionality, and a real-time chat system for direct communication between users and administrators.
+RealEstate is a full-stack web application designed to modernize the property buying, selling, and renting experience in Bangladesh. The platform connects property owners and agents with potential buyers and tenants through a user-friendly, mobile-first interface. Key features include detailed property listings, advanced search functionality, and a real-time chat system for direct communication between users and administrators.
 
 ## Live Application URL
 
