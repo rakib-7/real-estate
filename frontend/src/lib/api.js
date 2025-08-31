@@ -2,7 +2,7 @@
 // Centralized API fetcher with authentication and error handling
 import React, { useState, useEffect, createContext, useContext } from 'react';
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000';
-const API_ROUTE_BASE = `${API_BASE_URL}/api`;
+
 
 async function fetcher(url, options = {}) {
    console.log('Fetcher: Called with URL:', url, 'Options:', options); // <--- ADD THIS LOG
