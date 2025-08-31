@@ -1,25 +1,25 @@
-// backend/src/routes/userRoutes.js
 const express = require('express');
 const multer = require('multer');
 const path = require('path');
 const {
-  //submitInquiry,
-  //getUserInquiries,
-  bookmarkProperty,
-  removeBookmark,
-  getBookmarkedProperties,
-  getUserProfile,
-  updateUserProfile,
-  createPropertyByUser,
-  getPropertiesCreatedByUser, // NEW
-  updatePropertyByUser,       // NEW
-  deletePropertyByUser        // NEW
+    bookmarkProperty,
+    removeBookmark,
+    getBookmarkedProperties,
+    getUserProfile,
+    updateUserProfile,
+    createPropertyByUser,
+    getPropertiesCreatedByUser,
+    updatePropertyByUser,
+    deletePropertyByUser,
+    // Ensure the new function is imported
+    uploadAvatar: handleUploadAvatar 
 } = require('../controllers/userController.js');
-const { authenticateToken, authorizeRole } = require('../middlewares/authMiddleware.js');
+const { authenticateToken } = require('../middlewares/authMiddleware.js');
 
 const router = express.Router();
 
-// --- ADD THIS ENTIRE MULTER CONFIGURATION BLOCK ---
+// COMMENTED OUT: This entire old multer configuration block is now replaced by the new one below.
+/*
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
         // All user-submitted images go to the 'properties' folder.
@@ -42,17 +42,45 @@ const upload = multer({
         }
     }
 });
+*/
+
+// CORRECTED: This is the single, correct multer configuration for this file.
+// It can handle uploads to different folders (properties vs. avatars).
+const createMulterStorage = (folder) => {
+    return multer.diskStorage({
+        destination: (req, file, cb) => {
+            // We create subfolders for organization
+            cb(null, `uploads/${folder}/`);
+        },
+        filename: (req, file, cb) => {
+            const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+            const filename = `${file.fieldname}-${req.user.userId}-${uniqueSuffix}${path.extname(file.originalname)}`;
+            cb(null, filename);
+        }
+    });
+};
+
+const fileFilter = (req, file, cb) => {
+    if (file.mimetype.startsWith('image/')) {
+        cb(null, true);
+    } else {
+        cb(new Error('Only image files are allowed!'), false);
+    }
+};
+
+// Create separate uploaders for each type of upload
+const uploadProperties = multer({ storage: createMulterStorage('properties'), fileFilter });
+const uploadAvatar = multer({ storage: createMulterStorage('avatars'), fileFilter });
+
 
 router.use(authenticateToken);
-router.use(authorizeRole(['USER', 'ADMIN'])); // User-specific routes can be accessed by both users and admins
 
 // User Profile Management
 router.get('/profile', getUserProfile);
 router.put('/profile', updateUserProfile);
+// This route now correctly uses the 'uploadAvatar' middleware
+router.post('/profile/avatar', uploadAvatar.single('avatar'), handleUploadAvatar);
 
-// // Inquiry Management
-// router.post('/inquiries', submitInquiry);
-// router.get('/inquiries', getUserInquiries);
 
 // Bookmark Management
 router.post('/bookmarks', bookmarkProperty);
@@ -60,11 +88,10 @@ router.delete('/bookmarks/:propertyId', removeBookmark);
 router.get('/bookmarks', getBookmarkedProperties);
 
 // User-Added Properties Management
-//router.post('/properties', createPropertyByUser); // User adds a new property
-router.post('/properties', upload.array('images', 10), createPropertyByUser);
-router.get('/properties', getPropertiesCreatedByUser); // Get properties created by the current user
-//router.put('/properties/:id', updatePropertyByUser); // User updates their own property
-router.put('/properties/:id', upload.array('images', 10), updatePropertyByUser);
-router.delete('/properties/:id', deletePropertyByUser); // User deletes their own property
+// These routes now correctly use the 'uploadProperties' middleware
+router.post('/properties', uploadProperties.array('images', 10), createPropertyByUser);
+router.get('/properties', getPropertiesCreatedByUser);
+router.put('/properties/:id', uploadProperties.array('images', 10), updatePropertyByUser);
+router.delete('/properties/:id', deletePropertyByUser);
 
 module.exports = router;

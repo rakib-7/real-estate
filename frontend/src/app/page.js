@@ -7,8 +7,9 @@ import Input from '@/components/ui/Input';
 import PropertyCard from '@/components/PropertyCard';
 import { useAuth } from '@/context/AuthContext';
 import fetcher, { API_BASE_URL } from '@/lib/api';
-// ADDED: Tone.js is a library for creating sound effects in the browser.
 import * as Tone from 'tone';
+
+
 
 export default function HomePage() {
     const router = useRouter();
@@ -29,7 +30,7 @@ export default function HomePage() {
     });
     const [isSticky, setIsSticky] = useState(false);
 
-    // --- All your existing functions (useEffect, handleSearchChange, etc.) remain exactly the same ---
+    // All existing functions (useEffect, handleSearchChange, etc.) 
     useEffect(() => {
         const fetchInitialData = async () => {
             setLoading(true);
@@ -71,9 +72,9 @@ export default function HomePage() {
         const query = new URLSearchParams(cleanParams).toString();
         router.push(`/properties?${query}`);
     };
-    // --- End of existing functions ---
+    
 
-    // --- ADDED: Sound Effects for UI ---
+    // ADDED: Sound Effects for UI
     const playClickSound = () => {
         // Creates a simple, short synth sound for clicks.
         const synth = new Tone.Synth().toDestination();
@@ -86,8 +87,10 @@ export default function HomePage() {
         synth.triggerAttack("C4", Tone.now());
     };
 
+    
 
-    // COMMENTED OUT: Your entire old return statement is replaced by the redesigned version below.
+
+    
     /*
     return (
         <div className="min-h-screen flex flex-col bg-gradient-to-br from-blue-50 to-purple-50">
@@ -112,10 +115,10 @@ export default function HomePage() {
     );
     */
 
-    // CORRECTED: The new, "dashing" UI for your homepage.
+    
     return (
         <div className="min-h-screen flex flex-col ">
-            {/* --- ADDED: Tone.js Script for Sound Effects --- */}
+            
             <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
 
             <header className={`sticky top-0 z-50 w-full bg-white/80 backdrop-blur-md shadow-lg transition-transform duration-300 ease-in-out ${isSticky ? 'translate-y-0' : '-translate-y-full'}`}>
@@ -233,6 +236,8 @@ export default function HomePage() {
                         ))}
                     </div>
                 </section>
+                 
+
             </main>
             {/* <footer className="w-full bg-white shadow-inner p-8 text-center text-gray-600 border-t">
                 &copy; {new Date().getFullYear()} RealEstatePro. All rights reserved.
