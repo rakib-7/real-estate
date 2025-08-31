@@ -26,7 +26,7 @@ async function fetcher(url, options = {}) {
   console.log('Fetcher: Making request to:', fullUrl);
 
   try {
-    const res = await fetch(`${API_ROUTE_BASE}${url}`, {
+    const res = await fetch(fullUrl, {
       ...options,
       headers,
       credentials: 'include',
