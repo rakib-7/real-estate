@@ -1,19 +1,15 @@
-// --- frontend/lib/api.js ---
-// Centralized API fetcher with authentication and error handling
+//frontend/lib/api.js 
 import React, { useState, useEffect, createContext, useContext } from 'react';
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000';
 
 
 async function fetcher(url, options = {}) {
-   console.log('Fetcher: Called with URL:', url, 'Options:', options); // <--- ADD THIS LOG
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
 
   const headers = {
     //'content-Type': 'application/json',
     ...options.headers,
   };
 
-  // Don't set Content-Type for FormData (let the browser set it with boundary)
   if (!(options.body instanceof FormData)) {
     headers['Content-Type'] = 'application/json';
   }
@@ -23,7 +19,7 @@ async function fetcher(url, options = {}) {
   // }
 
   const fullUrl = `${API_BASE_URL}${url}`;
-  console.log('Fetcher: Making request to:', fullUrl);
+  
 
   try {
     const res = await fetch(fullUrl, {
