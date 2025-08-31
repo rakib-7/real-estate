@@ -21,7 +21,7 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
     cors: {
-        origin: "http://localhost:3000", 
+        origin: process.env.CORS_ORIGIN || "http://localhost:3000", 
         methods: ["GET", "POST"]
     }
 });
@@ -29,7 +29,7 @@ const io = new Server(server, {
 
 // MIDDLEWARE SETUP 
 app.use(cors({
-    origin: 'http://localhost:3000',
+    origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
     credentials: true,
 }));
 app.use(express.json({ limit: '10mb' }));
