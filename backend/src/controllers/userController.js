@@ -8,10 +8,14 @@ const path = require('path');
 exports.getUserProfile = async (req, res) => {
   const userId = req.user.userId;
   try {
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: { id: true, email: true, role: true, name: true, phoneNumber: true, location: true, createdAt: true, updatedAt: true },
-    });
+    // const user = await prisma.user.findUnique({
+    //   where: { id: userId },
+    //   select: { id: true, email: true, role: true, name: true, phoneNumber: true, location: true, createdAt: true, updatedAt: true },
+    // });
+   const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { id: true, email: true, role: true, name: true, phoneNumber: true, location: true, avatarUrl: true, subscription:true, listingResetDate: true, createdAt: true, updatedAt: true },
+   });
     if (!user) {
       return res.status(404).json({ error: 'User not found.' });
     }
@@ -35,7 +39,7 @@ exports.updateUserProfile = async (req, res) => {
         location: location,
         updatedAt: new Date(),
       },
-      select: { id: true, email: true, role: true, name: true, phoneNumber: true, location: true, createdAt: true, updatedAt: true },
+      select: { id: true, email: true, role: true, name: true, phoneNumber: true, location: true,avatarUrl: true, createdAt: true, updatedAt: true },
     });
     res.status(200).json(updatedUser);
   } catch (error) {
@@ -43,6 +47,43 @@ exports.updateUserProfile = async (req, res) => {
     res.status(500).json({ error: 'Failed to update user profile.' });
   }
 };
+
+exports.uploadAvatar = async (req, res) => {
+    const userId = req.user.userId;
+
+    if (!req.file) {
+        return res.status(400).json({ error: 'No image file provided.' });
+    }
+
+    try {
+        // 1. Find the user to get the path of their old avatar, if it exists.
+        const user = await prisma.user.findUnique({ where: { id: userId } });
+        
+        // 2. If an old avatar exists, delete it from the server to save space.
+        if (user && user.avatarUrl) {
+            const oldAvatarPath = path.join(__dirname, '..', '..', user.avatarUrl);
+            if (fs.existsSync(oldAvatarPath)) {
+                fs.unlinkSync(oldAvatarPath);
+            }
+        }
+
+        // 3. Construct the new avatar's URL.
+        const avatarUrl = `/uploads/avatars/${req.file.filename}`;
+
+        // 4. Update the user's record in the database with the new URL.
+        const updatedUser = await prisma.user.update({
+            where: { id: userId },
+            data: { avatarUrl: avatarUrl },
+            select: { id: true, email: true, role: true, name: true, phoneNumber: true, location: true, avatarUrl: true }
+        });
+
+        res.status(200).json({ message: 'Avatar updated successfully', user: updatedUser });
+    } catch (error) {
+        console.error('Error uploading avatar:', error);
+        res.status(500).json({ error: 'Failed to upload avatar.' });
+    }
+};
+
 
 // --- Inquiry Management ---
 // exports.submitInquiry = async (req, res) => {
@@ -104,7 +145,7 @@ exports.getOrCreateUserChat = async (req, res) => {
                 messages: {
                     orderBy: { createdAt: 'asc' },
                     include: {
-                        sender: { select: { id: true, name: true, role: true } }
+                        sender: { select: { id: true, name: true, role: true, avatarUrl: true } }
                     }
                 }
             }
@@ -145,7 +186,7 @@ exports.postMessage = async (req, res) => {
                 senderId: senderId
             },
             include: {
-                sender: { select: { id: true, name: true, role: true } }
+                sender: { select: { id: true, name: true, role: true, avatarUrl: true } }
             }
         });
         res.status(201).json(message);
@@ -218,10 +259,64 @@ exports.getBookmarkedProperties = async (req, res) => {
 
 // --- User-Added Properties ---
 exports.createPropertyByUser = async (req, res) => {
-    const { title, description, price, address, area, city, district, division, type, category, contactInfo, isFeatured } = req.body;
     const userId = req.user.userId; // Get user ID from the authenticated token
+
+     try {
+        // --- ADDED: The Monthly Limit Check Logic ---
+        let user = await prisma.user.findUnique({ where: { id: userId } });
+
+        // Define limits based on subscription type
+        const limits = {
+            FREE: 3,
+            PRO: 50
+        };
+        const userLimit = limits[user.subscription];
+        
+        let cycleStartDate = user.listingResetDate;
+        const now = new Date();
+
+        // If user has no reset date or it's in the past, start a new cycle.
+        if (!cycleStartDate || cycleStartDate < now) {
+            cycleStartDate = user.createdAt; // For the very first cycle, start from registration date.
+            
+            // Set the next reset date to be one month from now.
+            const nextResetDate = new Date();
+            nextResetDate.setMonth(nextResetDate.getMonth() + 1);
+            
+            // Update the user's reset date in the database.
+            user = await prisma.user.update({
+                where: { id: userId },
+                data: { listingResetDate: nextResetDate }
+            });
+        }
+
+        // Count properties created within the current monthly cycle.
+        const propertyCountThisMonth = await prisma.property.count({
+            where: {
+                userId: userId,
+                createdAt: {
+                    gte: cycleStartDate, // Greater than or equal to the start of the cycle
+                }
+            }
+        });
+
+        // Compare the count to the limit.
+        if (propertyCountThisMonth >= userLimit) {
+            return res.status(403).json({ error: 'You have reached your monthly property listing limit. Please upgrade your plan to add more.' });
+        }
+
+    
+    const { title, description, price, address, area, city, district, division, type, category, contactInfo, isFeatured } = req.body;
+    //const userId = req.user.userId; // Get user ID from the authenticated token
     const imageUrls = req.files ? req.files.map(file => `/uploads/properties/${file.filename}`) : [];
 
+    // const user = await prisma.user.findUnique({
+    //     where: { id: userId }});
+    // const propertyCount = await prisma.property.count({ where: { userId: userId } });
+    // if (propertyCount >= user.propertyLimit) {
+    // // If they are at or over their limit, send a "Forbidden" error.
+    // return res.status(403).json({ error: 'You have reached your property listing limit. Please upgrade your plan to add more.' });
+    // }
     // COMMENTED OUT: Old validation.
     // if (!title || !price || !location || !type) {
     //     return res.status(400).json({ error: 'Title, price, location, and type are required.' });
@@ -232,7 +327,7 @@ exports.createPropertyByUser = async (req, res) => {
         return res.status(400).json({ error: 'Title, price, type, area, city, district, and division are required.' });
     }
 
-    try {
+   
         const newProperty = await prisma.property.create({
             data: {
                 title,

@@ -10,7 +10,7 @@ const AuthLayout = ({ children, type }) => {
         const registerBtn = document.getElementById("register");
         const loginBtn = document.getElementById("login");
 
-        // Set the initial state based on the page type
+        // initial state based on the page type
         if (type === 'signup') {
             container?.classList.add("active");
         }
@@ -20,7 +20,7 @@ const AuthLayout = ({ children, type }) => {
         }
 
         const handleRegisterClick = () => {
-            // Instead of toggling, we navigate to the correct page
+
             router.push('/signup');
         };
         // const handleLoginClick = () => {
@@ -81,7 +81,7 @@ const AuthLayout = ({ children, type }) => {
                 .container.active .toggle-right { transform: translateX(200%); }
             `}</style>
             <div className="container" id="container">
-                {children} {/* This is where the login or signup form will be placed */}
+                {children}
                 <div className="toggle-container">
                     <div className="toggle">
                         <div className="toggle-panel toggle-left">
@@ -90,7 +90,7 @@ const AuthLayout = ({ children, type }) => {
                             <button className="" id="login">Sign In</button>
                         </div>
                         <div className="toggle-panel toggle-right">
-                            <h1>Hello, Friend!</h1>
+                            <h1>Hello!</h1>
                             <p>Don't have an account? Register here to get started.</p>
                             <button className="" id="register">Sign Up</button>
                         </div>

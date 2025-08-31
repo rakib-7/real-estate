@@ -52,7 +52,7 @@ exports.createAdminUser = async (req, res) => {
 exports.getAllUsers = async (req, res) => {
   try {
     const users = await prisma.user.findMany({
-      select: { id: true, email: true, role: true, name: true, phoneNumber: true, location: true, createdAt: true },
+      select: { id: true, email: true, role: true, name: true, phoneNumber: true, location: true, createdAt: true, subscription: true, listingResetDate: true },
       orderBy: { createdAt: 'desc' }
     });
     res.status(200).json(users);
@@ -90,7 +90,7 @@ exports.updateUserByAdmin = async (req, res) => {
         location: location || null,
         updatedAt: new Date(),
       },
-      select: { id: true, email: true, role: true, name: true, phoneNumber: true, location: true, createdAt: true },
+      select: { id: true, email: true, role: true, name: true, phoneNumber: true, location: true, createdAt: true, subscription: true, listingResetDate: true },
     });
     res.status(200).json(updatedUser);
   } catch (error) {
@@ -170,7 +170,7 @@ exports.getAllChatsForAdmin = async (req, res) => {
             orderBy: { updatedAt: 'desc' },
             include: {
                 user: { // Include info about the user who started the chat
-                    select: { id: true, name: true, email: true }
+                    select: { id: true, name: true, email: true, avatarUrl:true }
                 },
                 _count: { // Count how many messages are in the chat
                     select: { messages: true }
@@ -196,7 +196,7 @@ exports.getChatMessagesForAdmin = async (req, res) => {
                 messages: {
                     orderBy: { createdAt: 'asc' },
                     include: {
-                        sender: { select: { id: true, name: true, role: true } }
+                        sender: { select: { id: true, name: true, role: true, avatarUrl: true } }
                     }
                 }
             }

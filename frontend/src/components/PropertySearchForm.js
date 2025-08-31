@@ -3,12 +3,14 @@ import React, { useState, useEffect } from 'react';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import { useAuth } from '@/context/AuthContext';
-import { locationsData } from '@/lib/utils';
 
 // This component now contains the full expandable search logic.
-const PropertySearchForm = ({ onSearch }) => {
+const PropertySearchForm = ({ onSearch, initialParams = {} }) => {
     const { isAuthenticated } = useAuth();
     const [isSearchExpanded, setIsSearchExpanded] = useState(false);
+    
+    // COMMENTED OUT: The old searchParams state with unnecessary fields.
+    /*
     const [searchParams, setSearchParams] = useState({
         location: '',
         minPrice: '',
@@ -18,6 +20,27 @@ const PropertySearchForm = ({ onSearch }) => {
         nearLocation: '',
         suggestedByBookmarks: false,
     });
+    */
+
+    // CORRECTED: Simplified the state to only include relevant fields.
+    const [searchParams, setSearchParams] = useState({
+        location: '',
+        minPrice: '',
+        maxPrice: '',
+        type: '',
+        category: '',
+        suggestedByBookmarks: false,
+    });
+
+    // ADDED: A new useEffect to pre-fill the form if search params are in the URL.
+    useEffect(() => {
+        setSearchParams(prev => ({ ...prev, ...initialParams }));
+        // If there are any initial search params, expand the form by default.
+        if (Object.values(initialParams).some(val => val !== '')) {
+            setIsSearchExpanded(true);
+        }
+    }, [initialParams]);
+
 
     const handleSearchChange = (e) => {
         const { name, value, type, checked } = e.target;
@@ -29,8 +52,10 @@ const PropertySearchForm = ({ onSearch }) => {
 
     const handleSearchSubmit = (e) => {
         e.preventDefault();
-        onSearch(searchParams); // Pass the current search state to the parent page.
-        setIsSearchExpanded(false); // Collapse after search
+        // This function now correctly passes the search parameters to the parent page.
+        onSearch(searchParams);
+        // This line is the fix: it sets the expanded state to false, collapsing the form.
+        setIsSearchExpanded(false);
     };
 
     return (
@@ -71,6 +96,7 @@ const PropertySearchForm = ({ onSearch }) => {
                             onChange={handleSearchChange}
                             placeholder="e.g., 500000"
                         />
+                        {/* This input is redundant if you have a main location search, so it can be removed or kept based on preference. */}
                         <Input
                             label="Near Location (City/Area)"
                             type="text"
@@ -140,47 +166,3 @@ const PropertySearchForm = ({ onSearch }) => {
 };
 
 export default PropertySearchForm;
-
-/*
-// --- OLD PropertySearchForm CODE COMMENTED OUT ---
-'use client';
-import React, { useState } from 'react';
-import Button from '@/components/ui/Button';
-
-const PropertySearchForm = ({ onSearch }) => {
-    const [searchTerm, setSearchTerm] = useState('');
-    const [isExpanded, setIsExpanded] = useState(false);
-
-    const handleSearchSubmit = (e) => {
-        e.preventDefault();
-        // We now search using the 'area' field for a broad text search.
-        onSearch({ area: searchTerm });
-    };
-
-    return (
-        <form 
-            onSubmit={handleSearchSubmit} 
-            className="relative w-full max-w-lg mx-auto mb-10"
-            onFocus={() => setIsExpanded(true)}
-            onBlur={() => setIsExpanded(false)}
-        >
-            <input
-                type="text"
-                name="area"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search by Area, City, or District..."
-                className="w-full h-14 pl-6 pr-32 rounded-full border-2 border-gray-300 shadow-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-300"
-            />
-            <Button 
-                type="submit" 
-                className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full h-10 px-8"
-            >
-                Search
-            </Button>
-        </form>
-    );
-};
-
-export default PropertySearchForm;
-*/

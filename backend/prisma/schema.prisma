@@ -8,27 +8,40 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// CORRECTED: UserRole enum
+
 enum UserRole {
   ADMIN
   USER
+}
+
+enum SubscriptionType {
+  FREE
+  PRO
 }
 
 model User {
   id          Int      @id @default(autoincrement())
   email       String   @unique
   password    String
-  role        UserRole @default(USER) // CORRECTED: Use UserRole enum
+  role        UserRole @default(USER) 
   name        String?
   phoneNumber String?
   location    String?
+  avatarUrl   String?
+  //propertyLimit Int     @default(3)
+  subscription SubscriptionType @default(FREE) 
+  listingResetDate DateTime? 
+  passwordResetToken String? @unique
+  passwordResetTokenExpires DateTime?
+  emailVerificationToken String? @unique
+  isEmailVerified Boolean @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   //inquiries   Inquiry[]
   bookmarks   Bookmark[]
-  properties  Property[] // NEW: User can have multiple properties
-  chat        Chat? // NEW: User can have multiple chats
-  sentMessages Message[]  @relation("sentMessages")  // NEW: Messages sent by the user
+  properties  Property[] 
+  chat        Chat? 
+  sentMessages Message[]  @relation("sentMessages")  
 }
 
 model Property {
@@ -38,25 +51,25 @@ model Property {
   price       Float
   //location    String
     
-  // ADDED: Structured location fields for advanced searching in Bangladesh.
-  address     String?  // Full address line, e.g., "House 123, Road 4, Block B"
-  area        String?  // Neighborhood or area, e.g., "Bashundhara R/A", "Gulshan 1"
-  city        String?  // e.g., "Dhaka", "Chittagong"
-  district    String?   // e.g., "Dhaka", "Cox's Bazar"
-  division    String?   // e.g., "Dhaka", "Chittagong"
+  
+  address     String?  
+  area        String?   
+  city        String?  
+  district    String?   
+  division    String?   
   type        String
   category    String
   images      Image[]
   contactInfo String?
   isFeatured  Boolean  @default(false)
-  status      String   @default("pending") // "pending", "approved", "rejected"
+  status      String   @default("pending") 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   //inquiries   Inquiry[]
   bookmarks   Bookmark[]
 
   userId      Int
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade) // NEW: User relation for property owner
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade) 
 
   
 
@@ -69,15 +82,15 @@ model Image {
   propertyId Int
 }
 
-// NEW: Banner Model
+// Banner Model
 model Banner {
   id          Int      @id @default(autoincrement())
   title       String
   description String?
-  imageUrl    String   // URL to the image
+  imageUrl    String  
   linkUrl     String?
   isActive    Boolean  @default(true)
-  position    String   @default("top") // top, side, bottom
+  position    String   @default("top") 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
@@ -96,10 +109,10 @@ model Banner {
 model Chat {
   id          Int       @id @default(autoincrement())
   
-  userId      Int       @unique // Each user has exactly one chat thread.
+  userId      Int       @unique 
   user        User      @relation(fields: [userId], references: [id])
   
-  messages    Message[] // A chat contains many messages.
+  messages    Message[] 
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 }
@@ -112,7 +125,7 @@ model Message {
   chatId    Int
   chat      Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
 
-  // This ID links to the User model. We can check the sender's role to see if it's an admin.
+  
   senderId  Int
   sender    User     @relation(name: "sentMessages", fields: [senderId], references: [id], onDelete: Cascade)
 }

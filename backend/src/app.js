@@ -3,7 +3,6 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const cookieParser = require('cookie-parser');
 const path = require('path');
-// ADDED: Import the built-in 'http' module and 'Server' from 'socket.io'
 const http = require('http');
 const { Server } = require('socket.io');
 
@@ -17,20 +16,18 @@ const chatRoutes = require('./routes/chatRoutes.js');
 dotenv.config();
 
 const app = express();
-// ADDED: Create an HTTP server instance from your Express app.
 const server = http.createServer(app);
 
-// ADDED: Initialize a new Socket.IO server and attach it to the HTTP server.
-// This configures it to allow connections from your frontend.
+
 const io = new Server(server, {
     cors: {
-        origin: "http://localhost:3000", // Your frontend URL
+        origin: "http://localhost:3000", 
         methods: ["GET", "POST"]
     }
 });
 
 
-// --- MIDDLEWARE SETUP ---
+// MIDDLEWARE SETUP 
 app.use(cors({
     origin: 'http://localhost:3000',
     credentials: true,
@@ -41,7 +38,7 @@ app.use(cookieParser());
 app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 //app.use('/api/chat', chatRoutes); // ADDED: Use the chat routes
 
-// --- REAL-TIME CHAT LOGIC ---
+
 // This block listens for real-time events.
 io.on('connection', (socket) => {
     console.log(`✅ User Connected: ${socket.id}`);
@@ -67,7 +64,7 @@ io.on('connection', (socket) => {
         console.log(`❌ User Disconnected: ${socket.id}`);
     });
 });
-// --- END OF REAL-TIME LOGIC ---
+
 
 
 // --- API ROUTES ---
@@ -78,10 +75,10 @@ app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/properties', propertyRoutes);
 app.use('/api/user', userRoutes);
-app.use('/api/chats', chatRoutes); // ADDED: Use the chat routes
+app.use('/api/chats', chatRoutes); 
 
 
-// --- GLOBAL ERROR HANDLER ---
+// GLOBAL ERROR HANDLER 
 app.use((err, req, res, next) => {
     console.error('Global error handler:', err.stack);
     res.status(500).send('Something broke on the server!');
@@ -91,12 +88,6 @@ app.use((err, req, res, next) => {
 // --- SERVER STARTUP ---
 const PORT = process.env.PORT || 5000;
 
-// COMMENTED OUT: The original server startup logic.
-// app.listen(PORT, () => {
-//   console.log(`Server running on http://localhost:${PORT}`);
-// });
-
-// CORRECTED: Use server.listen() to start both the Express app and the Socket.IO server.
 server.listen(PORT, () => {
-    console.log(`🚀 Server running and listening for real-time events on http://localhost:${PORT}`);
+    console.log(`Server running on http://localhost:${PORT}`);
 });

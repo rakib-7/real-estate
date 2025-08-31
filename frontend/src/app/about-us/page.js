@@ -16,7 +16,7 @@ const teamMembers = [
     { 
         name: 'Akib',
         role: 'Frontend & UI/UX Designer',
-        imageUrl: 'https://placehold.co/400x400/8b5cf6/ffffff?text=M3',
+        imageUrl: '/images/akib.jpg',
         socialUrl: ''},
 ];
 

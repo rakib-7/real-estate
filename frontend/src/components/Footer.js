@@ -8,7 +8,7 @@ const Footer = () => {
             <div className="container mx-auto flex flex-col sm:flex-row items-center justify-between p-6">
                 {/* Left Side: Copyright */}
                 <p className="text-sm mb-4 sm:mb-0">
-                    &copy; {new Date().getFullYear()} RealEstatePro. All rights reserved.
+                    &copy; {new Date().getFullYear()} RealEstate. All rights reserved.
                 </p>
                 
                 {/* Center: Legal & About Links */}
@@ -17,10 +17,10 @@ const Footer = () => {
                         About Us
                     </Link>
                     <Link href="/terms-and-conditions" className="text-sm hover:text-white transition-colors">
-                        Terms
+                        Terms & conditions
                     </Link>
                     <Link href="/privacy-policy" className="text-sm hover:text-white transition-colors">
-                        Privacy
+                        Privacy-policy
                     </Link>
                 </div>
 

@@ -64,7 +64,8 @@ exports.getAllProperties = async (req, res) => {
     where.type = type;
   }
   if (category) {
-    where.category = category;
+    // where.category = category;
+    where.category = { equals: category, mode: 'insensitive' };
   }
 
   try {
