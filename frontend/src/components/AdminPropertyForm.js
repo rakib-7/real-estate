@@ -4,29 +4,15 @@ import React, { useState, useEffect } from 'react';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
 import fetcher from '@/lib/api';
-// CORRECTED: It's good practice to import the base URL for displaying images.
 import { API_BASE_URL } from '@/lib/api';
 
-// CORRECTED: Define an initial state object to easily reset the form.
-// const initialState = {
-//     title: '',
-//     description: '',
-//     price: '',
-//     location: '',
-//     type: 'rent',
-//     category: '',
-//     contactInfo: '',
-//     isFeatured: false,
-//     status: 'approved',
-//     images: null, // This will hold the FileList for new uploads
-//     acceptTerms: false,
-// };
+
 
 const initialState = {
     title: '',
     description: '',
     price: '',
-    // ADDED: New structured location fields
+    
     address: '',
     area: '',
     city: '',
@@ -42,7 +28,7 @@ const initialState = {
 };
 
 const AdminPropertyForm = ({ property, onSuccess, onCancel, isUserSubmission = false }) => {
-    // CORRECTED: Initialize state with the initialState object.
+    
     const [formData, setFormData] = useState(initialState);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
@@ -64,14 +50,14 @@ const AdminPropertyForm = ({ property, onSuccess, onCancel, isUserSubmission = f
                 category: property.category || '',
                 contactInfo: property.contactInfo || '',
                 isFeatured: property.isFeatured || false,
-                // CORRECTED: Set status from property, default to 'approved' if not present
+                
                 status: property.status || 'approved', 
                 images: null, // Reset images; user will upload new ones if they want to change them.
                 acceptTerms: false, // This is only for new user submissions.
             });
         } else {
             // If adding a new property, reset the form to its initial state.
-            // CORRECTED: If it's a user submission, the default status should be 'pending'.
+           
             setFormData({
                 ...initialState,
                 status: isUserSubmission ? 'pending' : 'approved',
@@ -97,13 +83,7 @@ const AdminPropertyForm = ({ property, onSuccess, onCancel, isUserSubmission = f
         setLoading(true);
         setError('');
 
-        // CORRECTED: Validation should happen first. The backend requires these fields regardless of user type.
-        // The concept of 'pending' is for admin approval, not for submitting incomplete data.
-        // if (!formData.title || !formData.price || !formData.location || !formData.type) {
-        //     setError('Title, price, location, and type are required.');
-        //     setLoading(false);
-        //     return;
-        // }
+
         if (!formData.title || !formData.price || !formData.type || !formData.area || !formData.city || !formData.district || !formData.division) {
             setError('Title, price, type, and full location details (Division, District, City, Area) are required.');
             setLoading(false);
@@ -112,7 +92,7 @@ const AdminPropertyForm = ({ property, onSuccess, onCancel, isUserSubmission = f
 
         const formDataToSend = new FormData();
         
-        // CORRECTED: Simplified appending logic. The values are taken directly from the state.
+        
         formDataToSend.append('title', formData.title);
         formDataToSend.append('description', formData.description);
         formDataToSend.append('price', formData.price);
@@ -131,7 +111,7 @@ const AdminPropertyForm = ({ property, onSuccess, onCancel, isUserSubmission = f
             formDataToSend.append('isFeatured', formData.isFeatured);
         }
 
-        // CORRECTED: Determine status based on who is submitting.
+       
         // Users always submit as 'pending'. Admins can set the status.
         formDataToSend.append('status', isUserSubmission ? 'pending' : formData.status);
         
@@ -144,7 +124,7 @@ const AdminPropertyForm = ({ property, onSuccess, onCancel, isUserSubmission = f
 
         try {
             const isEditing = !!property;
-            // CORRECTED: User submissions should always go to the user-specific endpoint.
+            
             const baseUrl = isUserSubmission ? '/user/properties' : '/admin/properties';
             const url = isEditing ? `${baseUrl}/${property.id}` : baseUrl;
             const method = isEditing ? 'PUT' : 'POST';
@@ -177,7 +157,7 @@ const AdminPropertyForm = ({ property, onSuccess, onCancel, isUserSubmission = f
                         {property.images.map(img => (
                             <img 
                                 key={img.id} 
-                                src={`${API_BASE_URL}${img.url}`} 
+                                src={`${API_BASE_URL.replace('/api', '')}${img.url}`} 
                                 alt="Existing property" 
                                 className="w-24 h-24 object-cover rounded-lg border"
                             />
@@ -187,7 +167,7 @@ const AdminPropertyForm = ({ property, onSuccess, onCancel, isUserSubmission = f
                 </div>
             )}
 
-            {/* CORRECTED: The 'required' prop should not be conditional if the backend always requires it. */}
+           
             <Input label="Title" type="text" name="title" value={formData.title} onChange={handleChange} required />
             <div className="mb-5">
                 <label htmlFor="description" className="block text-base font-medium text-gray-700 mb-2">Description</label>
@@ -220,7 +200,7 @@ const AdminPropertyForm = ({ property, onSuccess, onCancel, isUserSubmission = f
                     name="type"
                     value={formData.type}
                     onChange={handleChange}
-                    // COMMENTED OUT: required={!isUserSubmission || !formData.acceptTerms}
+                    // required={!isUserSubmission || !formData.acceptTerms}
                     required // This field is always required
                     className="block w-full px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-base transition-all duration-200 ease-in-out"
                 >
@@ -233,7 +213,7 @@ const AdminPropertyForm = ({ property, onSuccess, onCancel, isUserSubmission = f
             
             <div className="mb-5">
                 <label htmlFor="images" className="block text-base font-medium text-gray-700 mb-2">
-                    {/* CORRECTED: Clearer label for editing vs adding */}
+                    
                     {property ? 'Upload New Images (Replaces Old)' : 'Upload Images'}
                 </label>
                 <input
@@ -265,24 +245,7 @@ const AdminPropertyForm = ({ property, onSuccess, onCancel, isUserSubmission = f
                 </div>
             )}
             
-            {/* COMMENTED OUT: The logic to bypass validation was flawed. The status is now handled automatically.
-                The concept of accepting terms can be handled separately if needed, e.g., for user registration.
-            {isUserSubmission && (
-                <div className="mb-8 flex items-center">
-                    <input
-                        type="checkbox"
-                        id="acceptTerms"
-                        name="acceptTerms"
-                        checked={formData.acceptTerms}
-                        onChange={handleChange}
-                        className="mr-3 h-5 w-5 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded-md transition-all duration-200 ease-in-out"
-                    />
-                    <label htmlFor="acceptTerms" className="text-base text-gray-700 font-medium">
-                        Accept our conditions & terms to add as pending listing
-                    </label>
-                </div>
-            )}
-            */}
+            
 
             <div className="flex justify-end space-x-4 mt-8">
                 <Button type="button" onClick={onCancel} className="bg-gray-300 text-gray-800 hover:bg-gray-400 shadow-md">

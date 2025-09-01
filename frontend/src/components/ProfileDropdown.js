@@ -44,12 +44,15 @@ const ProfileDropdown = () => {
                         <p className="text-sm text-gray-500 dark:text-gray-400">Signed in as</p>
                         <p className="font-semibold text-gray-800 dark:text-white truncate">{user?.email}</p>
                     </div>
+                   
                     <Link href="/dashboard/user/profile" onClick={handleLinkClick} className="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
                         My Profile
                     </Link>
                     <Link href="/pricing" onClick={handleLinkClick} className="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
                         Upgrade Plan
                     </Link>
+                    
+                    
                     <button
                         onClick={logout}
                         className="w-full text-left px-4 py-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/50"

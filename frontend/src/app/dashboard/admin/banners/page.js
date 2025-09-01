@@ -21,7 +21,7 @@ export default function BannersPage() {
     const [imageFile, setImageFile] = useState(null);
     const [imagePreview, setImagePreview] = useState('');
 
-    // --- All your existing functions (useEffect, handleSubmit, etc.) remain exactly the same ---
+    
     useEffect(() => {
         fetchBanners();
     }, []);
@@ -131,7 +131,7 @@ export default function BannersPage() {
         setEditingBanner(null);
         resetForm();
     };
-    // --- End of existing functions ---
+   
 
 
     if (loading) {
@@ -144,30 +144,7 @@ export default function BannersPage() {
         );
     }
 
-    // COMMENTED OUT: Your entire old return statement is replaced by the new redesigned version below.
-    /*
-    return (
-        <div className="p-8">
-            <div className="flex justify-between items-center mb-8">
-                // ... old header ...
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                // ... old stats cards ...
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                // ... old banner grid ...
-            </div>
-            {banners.length === 0 && (
-                // ... old no banners message ...
-            )}
-            <Modal isOpen={showAddModal} onClose={handleModalClose} title={editingBanner ? 'Edit Banner' : 'Add New Banner'}>
-                // ... old form ...
-            </Modal>
-        </div>
-    );
-    */
-
-    // CORRECTED: The new, "dashing" UI for the banner management page.
+    
     return (
         <div className="p-8 bg-gray-50 min-h-full">
             {/* Header */}
@@ -193,7 +170,7 @@ export default function BannersPage() {
                     <div key={banner.id} className="bg-white rounded-2xl shadow-lg overflow-hidden group transform hover:-translate-y-2 transition-all duration-300">
                         <div className="relative h-56 bg-gray-200">
                             <img
-                                src={`${API_BASE_URL}${banner.imageUrl}`}
+                                src={`${API_BASE_URL.replace('/api', '')}${banner.imageUrl}`}
                                 alt={banner.title}
                                 // THIS IS THE FIX: 'object-contain' shows the full image without cropping.
                                 className="absolute inset-0 w-full h-full object-cover "

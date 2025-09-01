@@ -12,7 +12,7 @@ const PropertyCard = ({ property, showActions = false, onRemoveBookmark }) => {
     const router = useRouter();
     const { t } = useTranslation();
 
-    // --- All your existing logic for the carousel and view details remains the same ---
+    
     const handleViewDetails = () => {
         if (isAuthenticated) {
             router.push(`/properties/${property.id}`);
@@ -32,50 +32,19 @@ const PropertyCard = ({ property, showActions = false, onRemoveBookmark }) => {
         e.stopPropagation();
         setImageIndex((prev) => (prev - 1 + property.images.length) % property.images.length);
     };
-    // --- End of existing logic ---
+    
 
 
-    // COMMENTED OUT: Your entire old return statement is replaced by the new redesigned version below.
-    /*
-    return (
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl hover:shadow-2xl ...">
-            {property.images && property.images.length > 0 ? (
-                <div className="relative">
-                    <img src={`${API_BASE_URL}${property.images[imageIndex].url}`} className="w-full h-48 object-cover" />
-                    // ... old carousel buttons ...
-                </div>
-            ) : (
-                <div className="w-full h-48 bg-gray-200 ...">
-                    No Image
-                </div>
-            )}
-            <div className="p-4 flex-grow flex flex-col">
-                <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-2">{property.title}</h2>
-                <p className="text-gray-600 dark:text-gray-400 mb-1 flex items-center">
-                    <svg ... />
-                    {`${property.area}, ${property.city}`}
-                </p>
-                <p className="text-indigo-600 dark: text-gray-400 font-bold text-lg mb-2">{formatBdtPrice(property.price)}</p>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-auto">{property.type} - {property.category}</p>
-            </div>
-            <div className="p-6 border-t border-gray-100 flex justify-between items-center">
-                <Button onClick={handleViewDetails} className="w-full bg-indigo-600 ...">
-                    {t('viewDetails')}
-                </Button>
-                // ... old remove button ...
-            </div>
-        </div>
-    );
-    */
+    
 
-    // CORRECTED: The new, "dashing" UI for the property card.
+    
     return (
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden group transform hover:-translate-y-2 transition-all duration-300 border dark:border-gray-700">
             {/* Image Section with Overlays and Carousel */}
             <div className="relative h-64">
                 {property.images && property.images.length > 0 ? (
                     <img
-                        src={`${API_BASE_URL}${property.images[imageIndex].url}`}
+                        src={`${API_BASE_URL.replace('/api', '')}${property.images[imageIndex].url}`}
                         alt={property.title}
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                     />
