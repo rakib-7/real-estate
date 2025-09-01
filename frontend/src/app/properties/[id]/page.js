@@ -17,7 +17,7 @@ export default function PropertyDetailsPage() {
     const [error, setError] = useState(null);
     const [mainImageIndex, setMainImageIndex] = useState(0);
 
-    // --- All your existing logic for fetching data and handling actions remains the same ---
+    
     useEffect(() => {
         if (id) {
             const fetchProperty = async () => {
@@ -61,31 +61,13 @@ export default function PropertyDetailsPage() {
             alert(err.message);
         }
     };
-    // --- End of existing logic ---
+    
 
     if (loading || authLoading) return <div className="text-center p-8 text-xl text-gray-700 dark:text-gray-300">Loading property details...</div>;
     if (error) return <div className="text-center p-8 text-red-500 text-xl">Error: {error}</div>;
     if (!property) return <div className="text-center p-8 text-xl text-gray-700 dark:text-gray-300">Property not found.</div>;
 
-    // COMMENTED OUT: Your entire old return statement is replaced by the new redesigned version below.
-    /*
-    return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex flex-col">
-            <main className="container mx-auto p-8 flex-grow">
-                <div className="bg-white rounded-xl shadow-2xl overflow-hidden md:flex">
-                    <div className="md:w-1/2">
-                        // ... old image display ...
-                    </div>
-                    <div className="md:w-1/2 p-10">
-                        // ... old property details and buttons ...
-                    </div>
-                </div>
-            </main>
-        </div>
-    );
-    */
-
-    // CORRECTED: The new, "dashing" UI for the property details page.
+    
     return (
         <div className="bg-gray-50 dark:bg-gray-900">
             <main className="container mx-auto p-4 md:p-8">
@@ -94,7 +76,7 @@ export default function PropertyDetailsPage() {
                     {/* Main Image */}
                     <div className="col-span-3 row-span-2 md:col-span-2 h-full">
                         <img
-                            src={property.images && property.images.length > 0 ? `${API_BASE_URL}${property.images[mainImageIndex].url}` : 'https://placehold.co/800x600?text=No+Image'}
+                            src={property.images && property.images.length > 0 ? `${API_BASE_URL.replace('/api', '')}${property.images[mainImageIndex].url}` : 'https://placehold.co/800x600?text=No+Image'}
                             alt={property.title}
                             className="w-full h-full object-cover rounded-2xl shadow-lg"
                         />
