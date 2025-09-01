@@ -26,7 +26,7 @@ exports.register = async (req, res) => {
             },
         });
 
-        const verificationURL = `http://localhost:3000/verify-email?token=${emailVerificationToken}`;
+        const verificationURL = `${process.env.FRONTEND_URL}/verify-email?token=${emailVerificationToken}`;
 
         const transporter = nodemailer.createTransport({
             host: process.env.EMAIL_HOST,
@@ -191,7 +191,8 @@ exports.forgotPassword = async (req, res) => {
         });
 
         // This is the link that would normally be emailed.
-        const resetURL = `http://localhost:3000/reset-password?token=${resetToken}`;
+         const resetURL = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
+
         
         const transporter = nodemailer.createTransport({
             host: process.env.EMAIL_HOST,
