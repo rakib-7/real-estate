@@ -86,7 +86,7 @@ export default function PropertyDetailsPage() {
                         {property.images && property.images.slice(0, 3).map((image, index) => (
                             <img
                                 key={image.id}
-                                src={`${API_BASE_URL}${image.url}`}
+                                src={`${API_BASE_URL.replace('/api', '')}${image.url}`}
                                 alt={`Thumbnail ${index + 1}`}
                                 onClick={() => setMainImageIndex(index)}
                                 className={`w-full h-full object-cover rounded-xl cursor-pointer transition-opacity duration-300 ${mainImageIndex === index ? 'opacity-100 border-4 border-indigo-500' : 'opacity-70 hover:opacity-100'}`}
