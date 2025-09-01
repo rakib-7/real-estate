@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
 import { useAuth } from './AuthContext';
-import { API_BASE_URL } from '@/lib/api'; 
+//import { API_BASE_URL } from '@/lib/api'; 
 
 const SocketContext = createContext();
 
@@ -19,10 +19,10 @@ export const SocketProvider = ({ children }) => {
         // Only establish a connection if the user is authenticated.
         if (isAuthenticated) {
             
-            // const newSocket = io('http://localhost:5000');
-            // setSocket(newSocket);
-            const socketUrl = API_BASE_URL.replace('/api', '');
-            const newSocket = io(socketUrl);
+            const newSocket = io('http://localhost:5000');
+            setSocket(newSocket);
+            // const socketUrl = API_BASE_URL.replace('/api', '');
+            // const newSocket = io(socketUrl);
 
             // Join the user's personal chat room upon connection.
             newSocket.emit('join_chat', user.userId);
