@@ -66,8 +66,7 @@ const Navbar = () => {
                     {/* Right Side: Actions and Language Switcher */}
                 <div className="flex items-center space-x-4">
                     <LanguageSwitcher />
-
-                    {/* ADDED: The new icon-based theme switcher button. */}
+{/* ADDED: The new icon-based theme switcher button. */}
                     <button
                         onClick={toggleTheme}
                         title="Toggle Dark Mode"
@@ -80,35 +79,28 @@ const Navbar = () => {
                         )}
                     </button>
 
-                    {/* {isAuthenticated ? (
-                        <div className="flex items-center space-x-3 pl-4 border-l border-gray-200 dark:border-gray-700"> */}
-                            {/* ADDED: The clickable user avatar that links to the profile page. */}
-                            {/* <Link href="/dashboard/user/profile" title="My Profile">
-                                <img
-                                    src={user?.avatarUrl ? `${API_BASE_URL.replace('/api', '')}${user.avatarUrl}` : `https://placehold.co/40x40/6366f1/ffffff?text=${user?.email?.charAt(0).toUpperCase()}`}
-                                    alt="User Avatar"
-                                    className="w-10 h-10 rounded-full object-cover border-2 border-transparent hover:border-indigo-500 transition-all"
-                                />
-                            </Link>
-                            
-                            <Button 
-                                onClick={handleLogout} 
-                                title="Logout"
-                                className="bg-red-100 hover:bg-red-200 text-red-600 dark:bg-red-900/50 dark:hover:bg-red-900/80 dark:text-red-300 font-semibold w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300"
-                            >
-                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
-                            </Button>
-                        </div>
-                    ) : (
-                        <Link href="/login" className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-5 py-2 rounded-lg shadow-md transition-transform hover:scale-105">
-                            Login
-                        </Link>
-                    )} */}
+                    
 
                     <div className="pl-4 border-l border-gray-200 dark:border-gray-700">
                         {isAuthenticated ? (
-                            <ProfileDropdown />
+                            isAdmin ? (
+                                // If the user IS an admin.
+                                <div className="flex items-center space-x-3">
+                                    <span className="text-gray-700 dark:text-gray-300 hidden sm:inline">{user?.email}</span>
+                                    <Button 
+                                        onClick={logout} 
+                                        title="Logout"
+                                        className="bg-red-100 hover:bg-red-200 text-red-600 dark:bg-red-900/50 dark:hover:bg-red-900/80 dark:text-red-300 font-semibold w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300"
+                                    >
+                                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+                                    </Button>
+                                </div>
+                            ) : (
+                                // If the user is NOT an admin
+                                <ProfileDropdown />
+                            )
                         ) : (
+                            // If no one is logged in
                             <Link href="/login" className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-5 py-2 rounded-lg shadow-md transition-transform hover:scale-105">
                                 {t('login')}
                             </Link>
