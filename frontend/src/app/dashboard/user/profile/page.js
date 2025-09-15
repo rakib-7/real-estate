@@ -42,7 +42,8 @@ export default function UserProfilePage() {
                 avatarUrl: data.avatarUrl || '' // ADDED: Fetch the avatar URL.
             });
             if (data.avatarUrl) {
-                setAvatarPreview(`${API_BASE_URL.replace('/api', '')}${data.avatarUrl}`);
+                //setAvatarPreview(`${API_BASE_URL.replace('/api', '')}${data.avatarUrl}`);
+                setAvatarPreview(data.avatarUrl);
             }
         } catch (err) {
             setError(err.message);

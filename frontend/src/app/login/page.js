@@ -40,7 +40,7 @@ export default function LoginPage() {
                     <span>use your email and password</span>
                     <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete='email'/>
                     <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required autoComplete='current-password'/>
-                    {error && <p className="text-red-500 text-center mt-4 text-sm">{error}</p>}
+                    {error && <p className="text-red-500 dark:text-red-400 text-center mt-4 text-sm">{error}</p>}
                     <Link href="/forgot-password" className="text-sm text-gray-600 hover:text-indigo-600 my-4">
                             Forgot Your Password?
                     </Link>

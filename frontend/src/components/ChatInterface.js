@@ -133,7 +133,8 @@ const ChatInterface = ({ chatId, initialMessages = [], recipientName = 'Admin', 
             {/* Chat Header */}
             <div className="p-4 border-b dark:border-gray-700 bg-gray-50 dark:bg-gray-800 rounded-t-lg flex items-center">
                 <img 
-                    src={recipientAvatarUrl ? `${API_BASE_URL.replace('/api', '')}${recipientAvatarUrl}` : `https://placehold.co/40x40/e0e7ff/6366f1?text=${recipientName.charAt(0)}`}
+                    // src={recipientAvatarUrl ? `${API_BASE_URL.replace('/api', '')}${recipientAvatarUrl}` : `https://placehold.co/40x40/e0e7ff/6366f1?text=${recipientName.charAt(0)}`}
+                    src={recipientAvatarUrl ? recipientAvatarUrl : `https://placehold.co/40x40/e0e7ff/6366f1?text=${recipientName.charAt(0)}`}
                     alt={recipientName}
                     className="w-10 h-10 rounded-full object-cover mr-3"
                 />
@@ -147,7 +148,8 @@ const ChatInterface = ({ chatId, initialMessages = [], recipientName = 'Admin', 
                         {/* Avatar (for received messages) */}
                         {msg.sender.id !== user.userId && (
                             <img 
-                                src={msg.sender?.avatarUrl ? `${API_BASE_URL.replace('/api', '')}${msg.sender.avatarUrl}` : `https://placehold.co/40x40/d1d5db/4b5563?text=${msg.sender.name?.charAt(0)}`}
+                                // src={msg.sender?.avatarUrl ? `${API_BASE_URL.replace('/api', '')}${msg.sender.avatarUrl}` : `https://placehold.co/40x40/d1d5db/4b5563?text=${msg.sender.name?.charAt(0)}`}
+                               src={msg.sender?.avatarUrl ? msg.sender.avatarUrl : `https://placehold.co/40x40/d1d5db/4b5563?text=${msg.sender?.name?.charAt(0) || '?'}`}
                                 alt={msg.sender?.name}
                                 className="w-8 h-8 rounded-full object-cover"
                             />
@@ -162,8 +164,10 @@ const ChatInterface = ({ chatId, initialMessages = [], recipientName = 'Admin', 
                         {/* Avatar (for sent messages) */}
                         {msg.sender.id === user.userId && (
                              <img 
-                                src={msg.sender?.avatarUrl ? `${API_BASE_URL.replace('/api', '')}${msg.sender.avatarUrl}` : `https://placehold.co/40x40/c7d2fe/4338ca?text=${user.email?.charAt(0)}`}
-                                alt={user.name}
+                                // src={msg.sender?.avatarUrl ? `${API_BASE_URL.replace('/api', '')}${msg.sender.avatarUrl}` : `https://placehold.co/40x40/c7d2fe/4338ca?text=${user.email?.charAt(0)}`}
+                                // alt={user.name}
+                                src={user?.avatarUrl ? user.avatarUrl : `https://placehold.co/40x40/c7d2fe/4338ca?text=${user.email?.charAt(0)}`}
+                                alt={user?.name}
                                 className="w-8 h-8 rounded-full object-cover"
                             />
                         )}

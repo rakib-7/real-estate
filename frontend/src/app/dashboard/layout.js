@@ -9,7 +9,7 @@ const DashboardLayout = ({ children }) => {
     const pathname = usePathname();
     const { isAuthenticated, isAdmin, loading: authLoading, user: authUser } = useAuth();
 
-    // --- All your existing logic for authentication and redirection remains the same ---
+    // logic for authentication and redirection 
     useEffect(() => {
         if (!authLoading) {
             if (!isAuthenticated) {
@@ -20,7 +20,7 @@ const DashboardLayout = ({ children }) => {
         }
     }, [isAuthenticated, isAdmin, authLoading, router, pathname]);
 
-    // CORRECTED: Added SVG icons to each tab for a more professional look.
+    
     const userTabs = [
         { id: 'bookmarks', name: 'Bookmarks', path: '/dashboard/user', icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" /></svg> },
         { id: 'my-inquiries', name: 'Chat with Admin', path: '/dashboard/user/inquiries', icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg> },
@@ -40,32 +40,13 @@ const DashboardLayout = ({ children }) => {
         return <>{children}</>; // Admins use a separate layout
     }
 
-    // COMMENTED OUT: Your entire old return statement is replaced by the new sidebar layout below.
-    /*
+    
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex flex-col">
-            <div className="container mx-auto p-8 flex-grow">
-                <h1 className="text-4xl font-extrabold mb-10 text-gray-800 text-center drop-shadow-sm">User Dashboard</h1>
-                <div className="mb-10 border-b-2 border-gray-200 pb-3">
-                    <nav className="-mb-px flex space-x-10" aria-label="Tabs">
-                        // ... old top tabs navigation ...
-                    </nav>
-                </div>
-                <div className="bg-white p-10 rounded-2xl shadow-3xl border border-gray-100">
-                    {children}
-                </div>
-            </div>
-        </div>
-    );
-    */
-
-    // CORRECTED: The new, "dashing" sidebar layout.
-    return (
-        <div className="min-h-screen flex bg-gray-100">
+        <div className="min-h-screen flex bg-gray-100 dark:bg-gray-900">
             {/* Sidebar Navigation */}
-            <aside className="w-64 bg-white shadow-lg flex-shrink-0">
+            <aside className="w-64 bg-white dark:bg-gray-800 shadow-lg flex-shrink-0">
                 <div className="p-6">
-                    <h2 className="text-2xl font-bold text-indigo-600 mb-8">My Dashboard</h2>
+                    <h2 className="text-2xl font-bold text-indigo-600 dark:text-indigo-400 mb-8">My Dashboard</h2>
                     <nav className="space-y-2">
                         {userTabs.map((tab) => (
                             <Link
@@ -74,7 +55,7 @@ const DashboardLayout = ({ children }) => {
                                 className={`flex items-center py-3 px-4 rounded-lg text-lg font-medium transition-all duration-200 group
                                     ${pathname === tab.path
                                         ? 'bg-indigo-600 text-white shadow-md'
-                                        : 'text-gray-600 hover:bg-gray-200 hover:text-gray-900'
+                                        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white'
                                     }`}
                             >
                                 <span className="mr-4">{tab.icon}</span>
@@ -87,7 +68,7 @@ const DashboardLayout = ({ children }) => {
 
             {/* Main Content Area */}
             <main className="flex-grow p-8">
-                <div className="bg-white p-10 rounded-2xl shadow-xl border border-gray-200 min-h-full">
+                <div className="bg-white dark:bg-gray-800 p-10 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 min-h-full">
                     {children}
                 </div>
             </main>

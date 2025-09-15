@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import Button from '@/components/ui/Button';
 import { formatBdtPrice } from '@/lib/utils';
-import { API_BASE_URL } from '@/lib/api';
+import fetcher from '@/lib/api';
 import { useTranslation } from 'react-i18next';
 
 const PropertyCard = ({ property, showActions = false, onRemoveBookmark }) => {
@@ -44,7 +44,8 @@ const PropertyCard = ({ property, showActions = false, onRemoveBookmark }) => {
             <div className="relative h-64">
                 {property.images && property.images.length > 0 ? (
                     <img
-                        src={`${API_BASE_URL.replace('/api', '')}${property.images[imageIndex].url}`}
+                        // src={`${API_BASE_URL.replace('/api', '')}${property.images[imageIndex].url}`}
+                        src={property.images[imageIndex].url}
                         alt={property.title}
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                     />

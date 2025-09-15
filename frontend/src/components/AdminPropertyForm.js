@@ -129,13 +129,15 @@ const AdminPropertyForm = ({ property, onSuccess, onCancel, isUserSubmission = f
             const url = isEditing ? `${baseUrl}/${property.id}` : baseUrl;
             const method = isEditing ? 'PUT' : 'POST';
 
-            await fetcher(url, {
-                method,
-                body: formDataToSend,
+            const responseData = await fetcher(url, { 
+                method, body: formDataToSend 
             });
+            // const responseData =
+
+            
 
             alert(`Property ${isEditing ? 'updated' : 'submitted'} successfully!`);
-            onSuccess();
+            onSuccess(responseData);
         } catch (err) {
             setError(err.message);
             console.error('PropertyForm: Fetch failed:', err);
@@ -145,25 +147,26 @@ const AdminPropertyForm = ({ property, onSuccess, onCancel, isUserSubmission = f
     };
 
     return (
-        <form onSubmit={handleSubmit} className="p-8 bg-white rounded-2xl shadow-xl border border-gray-100">
-            <h2 className="text-3xl font-bold mb-8 text-gray-800">{property ? 'Edit Property' : 'Add New Property'}</h2>
+        <form onSubmit={handleSubmit} className="p-8 bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700">
+            <h2 className="text-3xl font-bold mb-8 text-gray-800 dark:text-white">{property ? 'Edit Property' : 'Add New Property'}</h2>
             {error && <p className="text-red-500 mb-5 text-base font-medium">{error}</p>}
             
-            {/* ADDED: Display existing images when editing for better UX */}
+            
             {property && property.images && property.images.length > 0 && (
                 <div className="mb-5">
-                    <p className="block text-base font-medium text-gray-700 mb-2">Current Images</p>
+                    <p className="block text-base font-medium text-gray-700 dark:text-gray-300 mb-2">Current Images</p>
                     <div className="flex flex-wrap gap-4">
                         {property.images.map(img => (
                             <img 
                                 key={img.id} 
-                                src={`${API_BASE_URL.replace('/api', '')}${img.url}`} 
+                                // src={`${API_BASE_URL.replace('/api', '')}${img.url}`} 
+                                src={img.url}
                                 alt="Existing property" 
                                 className="w-24 h-24 object-cover rounded-lg border"
                             />
                         ))}
                     </div>
-                     <p className="text-sm text-gray-500 mt-2">Uploading new images will replace all current images.</p>
+                     <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">Uploading new images will replace all current images.</p>
                 </div>
             )}
 
@@ -177,7 +180,7 @@ const AdminPropertyForm = ({ property, onSuccess, onCancel, isUserSubmission = f
                     value={formData.description}
                     onChange={handleChange}
                     rows="5"
-                    className="block w-full px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-base transition-all duration-200 ease-in-out"
+                     className="block w-full px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm bg-gray-50 dark:bg-gray-700 dark:border-gray-600 text-gray-900 dark:text-white dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 ></textarea>
             </div>
             <Input label="Price" type="number" name="price" value={formData.price} onChange={handleChange} required />
@@ -202,7 +205,7 @@ const AdminPropertyForm = ({ property, onSuccess, onCancel, isUserSubmission = f
                     onChange={handleChange}
                     // required={!isUserSubmission || !formData.acceptTerms}
                     required // This field is always required
-                    className="block w-full px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-base transition-all duration-200 ease-in-out"
+                    className="block w-full px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm bg-gray-50 dark:bg-gray-700 dark:border-gray-600 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 >
                     <option value="rent">For Rent</option>
                     <option value="sale">For Sale</option>

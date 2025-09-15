@@ -3,6 +3,6 @@
   "/login/page": "app/login/page.js",
   "/page": "app/page.js",
   "/pricing/page": "app/pricing/page.js",
-  "/properties/page": "app/properties/page.js",
-  "/about-us/page": "app/about-us/page.js"
+  "/properties/[id]/page": "app/properties/[id]/page.js",
+  "/dashboard/user/my-properties/page": "app/dashboard/user/my-properties/page.js"
 }

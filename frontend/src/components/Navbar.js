@@ -43,9 +43,13 @@ const Navbar = () => {
             <div className="container mx-auto flex justify-between items-center p-4">
                 {/* Left Side: Logo and Main Navigation */}
                 <div className="flex items-center space-x-10">
-                    <Link href="/" className="text-3xl font-bold text-gray-800 dark:text-white">
+                    {/* <Link href="/" className="text-3xl font-bold text-gray-800 dark:text-white">
                         RealEstate<span className="text-indigo-600 dark:text-indigo-400"></span>
+                    </Link> */}
+                    <Link href="/">
+                        <img src="/images/logo.png" alt= "RealEstate Logo" className="h-20 w-auto" />
                     </Link>
+
                     <div className=" md:flex items-center space-x-8">
                         <Link href="/properties" className={`text-2xl font-medium transition-colors duration-300 ${pathname === '/properties' ? 'text-indigo-600 dark:text-indigo-400  border-indigo-600' : 'text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-white'}`}>
                            {t('browseProperties')}
@@ -66,7 +70,7 @@ const Navbar = () => {
                     {/* Right Side: Actions and Language Switcher */}
                 <div className="flex items-center space-x-4">
                     <LanguageSwitcher />
-{/* ADDED: The new icon-based theme switcher button. */}
+
                     <button
                         onClick={toggleTheme}
                         title="Toggle Dark Mode"

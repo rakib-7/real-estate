@@ -1,8 +1,12 @@
 // backend/src/controllers/userController.js
 const { PrismaClient } = require('@prisma/client');
+const { createClient } = require('@supabase/supabase-js');
 const prisma = new PrismaClient();
+//const cloudinary = require('cloudinary').v2;
 const fs = require('fs');
 const path = require('path');
+
+const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
 
 // --- User Profile Management ---
 exports.getUserProfile = async (req, res) => {
@@ -14,12 +18,36 @@ exports.getUserProfile = async (req, res) => {
     // });
    const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { id: true, email: true, role: true, name: true, phoneNumber: true, location: true, avatarUrl: true, subscription:true, listingResetDate: true, createdAt: true, updatedAt: true },
+    select: { id: true, email: true, role: true, name: true, phoneNumber: true,
+              location: true, avatarUrl: true, subscription:true, listingResetDate: true, createdAt: true, updatedAt: true },
    });
     if (!user) {
       return res.status(404).json({ error: 'User not found.' });
     }
-    res.status(200).json(user);
+
+    const now = new Date();
+        let cycleStartDate;
+
+        // If the user's reset date is in the past or doesn't exist, the cycle starts from their creation date.
+        if (!user.listingResetDate || new Date(user.listingResetDate) < now) {
+            cycleStartDate = user.createdAt;
+        } else {
+            // Otherwise, the cycle started one month before the next reset date.
+            cycleStartDate = new Date(user.listingResetDate);
+            cycleStartDate.setMonth(cycleStartDate.getMonth() - 1);
+        }
+
+        const propertiesPostedThisMonth = await prisma.property.count({
+            where: {
+                userId: userId,
+                createdAt: { gte: cycleStartDate }, // "gte" means "greater than or equal to"
+            }
+        });
+
+    res.status(200).json({
+        ...user,
+    propertiesPostedThisMonth ,
+  });
   } catch (error) {
     console.error('Error fetching user profile:', error);
     res.status(500).json({ error: 'Failed to retrieve user profile.' });
@@ -55,28 +83,62 @@ exports.uploadAvatar = async (req, res) => {
         return res.status(400).json({ error: 'No image file provided.' });
     }
 
-    try {
-        // 1. Find the user to get the path of their old avatar, if it exists.
-        const user = await prisma.user.findUnique({ where: { id: userId } });
+    // try {
+    //     // 1. Find the user to get the path of their old avatar, if it exists.
+    //     const user = await prisma.user.findUnique({ where: { id: userId } });
         
-        // 2. If an old avatar exists, delete it from the server to save space.
-        if (user && user.avatarUrl) {
-            const oldAvatarPath = path.join(__dirname, '..', '..', user.avatarUrl);
-            if (fs.existsSync(oldAvatarPath)) {
-                fs.unlinkSync(oldAvatarPath);
-            }
-        }
+    //     // 2. If an old avatar exists, delete it from the server to save space.
+    //     if (user && user.avatarUrl) {
+    //         const oldAvatarPath = path.join(__dirname, '..', '..', user.avatarUrl);
+    //         if (fs.existsSync(oldAvatarPath)) {
+    //             fs.unlinkSync(oldAvatarPath);
+    //         }
+    //     }
 
-        // 3. Construct the new avatar's URL.
-        const avatarUrl = `/uploads/avatars/${req.file.filename}`;
+    //     // 3. Construct the new avatar's URL.
+    //     const avatarUrl = `/uploads/avatars/${req.file.filename}`;
 
-        // 4. Update the user's record in the database with the new URL.
+    //     // 4. Update the user's record in the database with the new URL.
+    //     const updatedUser = await prisma.user.update({
+    //         where: { id: userId },
+    //         data: { avatarUrl: avatarUrl },
+    //         select: { id: true, email: true, role: true, name: true, phoneNumber: true, location: true, avatarUrl: true }
+    //     });
+
+    //     res.status(200).json({ message: 'Avatar updated successfully', user: updatedUser });
+    // } catch (error) {
+    //     console.error('Error uploading avatar:', error);
+    //     res.status(500).json({ error: 'Failed to upload avatar.' });
+    // }
+
+    //supabase
+     try {
+        const file = req.file;
+        const sanitizedOriginalName = file.originalname.replace(/[^a-zA-Z0-9.\-_]/g, '_');
+       const fileName = `avatars/avatar-${userId}-${Date.now()}`;
+
+        // 1. Upload the file to Supabase Storage
+        const { data: uploadData, error: uploadError } = await supabase.storage
+            .from('real_estate_storage')
+            .upload(fileName, file.buffer, {
+                contentType: file.mimetype,
+            });
+
+        if (uploadError) throw uploadError;
+
+        // 2. Get the permanent public URL for the file
+        const { data: urlData } = supabase.storage
+            .from('real_estate_storage')
+            .getPublicUrl(uploadData.path);
+
+        const avatarUrl = urlData.publicUrl;
+
+        // 3. Save the permanent Supabase URL to your Neon database
         const updatedUser = await prisma.user.update({
             where: { id: userId },
-            data: { avatarUrl: avatarUrl },
-            select: { id: true, email: true, role: true, name: true, phoneNumber: true, location: true, avatarUrl: true }
+            data: { avatarUrl },
+            select: { id: true, email: true, role: true, name: true, avatarUrl: true }
         });
-
         res.status(200).json({ message: 'Avatar updated successfully', user: updatedUser });
     } catch (error) {
         console.error('Error uploading avatar:', error);
@@ -85,57 +147,6 @@ exports.uploadAvatar = async (req, res) => {
 };
 
 
-// --- Inquiry Management ---
-// exports.submitInquiry = async (req, res) => {
-//   const { propertyId, message } = req.body;
-//   const userId = req.user.userId;
-
-//   if (!propertyId || !message) {
-//     return res.status(400).json({ error: 'Property ID and message are required.' });
-//   }
-
-//   try {
-//     const newInquiry = await prisma.inquiry.create({
-//       data: {
-//         userId,
-//         propertyId: parseInt(propertyId),
-//         message,
-//       },
-//     });
-//     res.status(201).json(newInquiry);
-//   } catch (error) {
-//     console.error('Error submitting inquiry:', error);
-//     res.status(500).json({ error: 'Failed to submit inquiry.' });
-//   }
-// };
-
-// exports.getUserInquiries = async (req, res) => {
-//   const userId = req.user.userId;
-//   try {
-//     const inquiries = await prisma.inquiry.findMany({
-//       where: { userId },
-//       include: {
-//         property: {
-//           select: { id: true, title: true,
-//             //  location: true,
-//             area: true, city: true, district: true, division: true,
-//               price: true, images: true }
-//         }
-//       },
-//       orderBy: { createdAt: 'desc' }
-//     });
-//     res.status(200).json(inquiries);
-//   } catch (error) {
-//     console.error('Error fetching user inquiries:', error);
-//     res.status(500).json({ error: 'Failed to retrieve your inquiries.' });
-//   }
-// };
-
-// --- ADDED: New Chat functions for Users ---
-
-/**
- * Gets the user's chat history. If a chat doesn't exist, it creates one.
- */
 exports.getOrCreateUserChat = async (req, res) => {
     const userId = req.user.userId;
     try {
@@ -262,7 +273,7 @@ exports.createPropertyByUser = async (req, res) => {
     const userId = req.user.userId; // Get user ID from the authenticated token
 
      try {
-        // --- ADDED: The Monthly Limit Check Logic ---
+        // The Monthly Limit Check Logic 
         let user = await prisma.user.findUnique({ where: { id: userId } });
 
         // Define limits based on subscription type
@@ -277,7 +288,7 @@ exports.createPropertyByUser = async (req, res) => {
 
         // If user has no reset date or it's in the past, start a new cycle.
         if (!cycleStartDate || cycleStartDate < now) {
-            cycleStartDate = user.createdAt; // For the very first cycle, start from registration date.
+            const lastReset = user.listingResetDate || user.createdAt; // For the very first cycle, start from registration date.
             
             // Set the next reset date to be one month from now.
             const nextResetDate = new Date();
@@ -288,6 +299,10 @@ exports.createPropertyByUser = async (req, res) => {
                 where: { id: userId },
                 data: { listingResetDate: nextResetDate }
             });
+            cycleStartDate = lastReset;
+        }else {
+            cycleStartDate = new Date(user.listingResetDate);
+            cycleStartDate.setMonth(cycleStartDate.getMonth() - 1);
         }
 
         // Count properties created within the current monthly cycle.
@@ -306,26 +321,36 @@ exports.createPropertyByUser = async (req, res) => {
         }
 
     
-    const { title, description, price, address, area, city, district, division, type, category, contactInfo, isFeatured } = req.body;
+   
     //const userId = req.user.userId; // Get user ID from the authenticated token
-    const imageUrls = req.files ? req.files.map(file => `/uploads/properties/${file.filename}`) : [];
+   // const imageUrls = req.files ? req.files.map(file => `/uploads/properties/${file.filename}`) : [];
 
-    // const user = await prisma.user.findUnique({
-    //     where: { id: userId }});
-    // const propertyCount = await prisma.property.count({ where: { userId: userId } });
-    // if (propertyCount >= user.propertyLimit) {
-    // // If they are at or over their limit, send a "Forbidden" error.
-    // return res.status(403).json({ error: 'You have reached your property listing limit. Please upgrade your plan to add more.' });
-    // }
-    // COMMENTED OUT: Old validation.
-    // if (!title || !price || !location || !type) {
-    //     return res.status(400).json({ error: 'Title, price, location, and type are required.' });
-    // }
+   //const imageUrls = req.files ? req.files.map(file => file.path) : []; // Cloudinary version
+    const imageUrls = [];
+    if (req.files && req.files.length > 0) {
+            for (const file of req.files) {
+                const sanitizedOriginalName = file.originalname.replace(/[^a-zA-Z0-9.\-_]/g, '_');
+                const fileName = `properties/property-${userId}-${Date.now()}-${sanitizedOriginalName}`;
+                const { data: uploadData, error: uploadError } = await supabase.storage
+                    .from('real_estate_storage')
+                    .upload(fileName, file.buffer, {
+                        contentType: file.mimetype,
+                    });
 
-    // CORRECTED: New validation for essential location fields.
-    if (!title || !price || !type || !area || !city || !district || !division) {
-        return res.status(400).json({ error: 'Title, price, type, area, city, district, and division are required.' });
-    }
+                if (uploadError) throw uploadError;
+
+                const { data: urlData } = supabase.storage
+                    .from('real_estate_storage')
+                    .getPublicUrl(uploadData.path);
+                
+                imageUrls.push(urlData.publicUrl);
+            }
+        }
+
+         const { title, description, price, address, area, city, district, division, type, category, contactInfo, isFeatured } = req.body;
+        if (!title || !price || !type || !area || !city || !district || !division) {
+             return res.status(400).json({ error: 'Title, price, type, area, city, district, and division are required.' });
+       }
 
    
         const newProperty = await prisma.property.create({
@@ -350,9 +375,12 @@ exports.createPropertyByUser = async (req, res) => {
                         id: userId
                     }
                 },
+                // images: {
+                //     create: imageUrls.map(url => ({ url }))
+                // }
                 images: {
                     create: imageUrls.map(url => ({ url }))
-                }
+                } // Cloudinary 
             },
         });
         res.status(201).json(newProperty);
@@ -383,86 +411,12 @@ exports.getPropertiesCreatedByUser = async (req, res) => {
     }
 };
 
-/**
- * Updates a property owned by the logged-in user.
- */
-// exports.updatePropertyByUser = async (req, res) => {
-//     const { id } = req.params;
-//     const { title, description, price, location, type, category, contactInfo, isFeatured } = req.body;
-//     const userId = req.user.userId;
-//     const newImageUrls = req.files ? req.files.map(file => `/uploads/properties/${file.filename}`) : [];
 
-//     try {
-//         const property = await prisma.property.findUnique({ where: { id: parseInt(id) } });
-
-//         if (!property) {
-//             return res.status(404).json({ error: 'Property not found.' });
-//         }
-//         // CORRECTED: Check ownership using the reliable userId
-//         if (property.userId !== userId) {
-//             return res.status(403).json({ error: 'Forbidden: You can only update your own properties.' });
-//         }
-
-//         // Image handling logic remains the same...
-
-//         const updatedProperty = await prisma.property.update({
-//             where: { id: parseInt(id) },
-//             data: {
-//                 title,
-//                 description,
-//                 price: parseFloat(price),
-//                 location,
-//                 type,
-//                 category,
-//                 contactInfo,
-//                 isFeatured: isFeatured === 'true',
-//                 status: 'pending', // Re-submit for approval after an update
-//                 // Image update logic remains the same...
-//             },
-//         });
-//         res.status(200).json(updatedProperty);
-//     } catch (error) {
-//         console.error('Error updating property by user:', error);
-//         res.status(500).json({ error: 'Failed to update property.' });
-//     }
-// };
-
-// /**
-//  * Deletes a property owned by the logged-in user.
-//  */
-// exports.deletePropertyByUser = async (req, res) => {
-//     const { id } = req.params;
-//     const userId = req.user.userId;
-
-//     try {
-//         const property = await prisma.property.findUnique({ where: { id: parseInt(id) }, include: { images: true } });
-//         if (!property) {
-//             return res.status(404).json({ error: 'Property not found.' });
-//         }
-//         // CORRECTED: Check ownership using userId
-//         if (property.userId !== userId) {
-//             return res.status(403).json({ error: 'Forbidden: You can only delete your own properties.' });
-//         }
-
-//         // File deletion logic remains the same...
-//         if (property.images && property.images.length > 0) {
-//            // ... logic to delete files from server ...
-//         }
-
-//         // Deletion is now cascaded by the schema, so we only need to delete the property.
-//         await prisma.property.delete({ where: { id: parseInt(id) } });
-
-//         res.status(204).send();
-//     } catch (error) {
-//         console.error('Error deleting property by user:', error);
-//         res.status(500).json({ error: 'Failed to delete property.' });
-//     }
-// };
 exports.updatePropertyByUser = async (req, res) => {
     const { id } = req.params;
     const { title, description, price, address, area, city, district, division, type, category, contactInfo, isFeatured } = req.body;
     const userId = req.user.userId;
-    const newImageUrls = req.files ? req.files.map(file => `/uploads/properties/${file.filename}`) : [];
+   // const newImageUrls = req.files ? req.files.map(file => `/uploads/properties/${file.filename}`) : [];
 
     try {
         // Find the property to ensure it exists and the user owns it.
@@ -479,17 +433,38 @@ exports.updatePropertyByUser = async (req, res) => {
             return res.status(403).json({ error: 'Forbidden: You can only update your own properties.' });
         }
 
-        // ADDED: Logic to delete old images if new ones are uploaded.
-        if (newImageUrls.length > 0 && propertyToUpdate.images) {
-            // 1. Delete old image files from the server's filesystem.
-            propertyToUpdate.images.forEach(image => {
-                const oldImagePath = path.join(__dirname, '..', '..', image.url);
-                if (fs.existsSync(oldImagePath)) {
-                    fs.unlinkSync(oldImagePath);
-                }
-            });
-            // 2. Delete old image records from the database.
-            await prisma.image.deleteMany({ where: { propertyId: parseInt(id) } });
+        const newImageUrls = [];
+        if (req.files && req.files.length > 0) {
+            // 1. Delete old images from Supabase Storage
+            if (propertyToUpdate.images && propertyToUpdate.images.length > 0) {
+                const oldImagePaths = propertyToUpdate.images.map(image => {
+                    // Extract the path from the full URL (e.g., 'properties/image-name.jpg')
+                    return image.url.substring(image.url.indexOf('/properties/')); 
+                });
+
+                await supabase.storage
+                    .from('real_estate_storage')
+                    .remove(oldImagePaths);
+            }
+
+            // 2. Upload new images to Supabase
+            for (const file of req.files) {
+                const sanitizedOriginalName = file.originalname.replace(/[^a-zA-Z0-9.\-_]/g, '_');
+                const fileName = `properties/property-${userId}-${Date.now()}-${sanitizedOriginalName}`;
+                const { data: uploadData, error: uploadError } = await supabase.storage
+                    .from('real_estate_storage')
+                    .upload(fileName, file.buffer, {
+                        contentType: file.mimetype,
+                    });
+
+                if (uploadError) throw uploadError;
+
+                const { data: urlData } = supabase.storage
+                    .from('real_estate_storage')
+                    .getPublicUrl(uploadData.path);
+                
+                newImageUrls.push(urlData.publicUrl);
+            }
         }
 
         const updatedProperty = await prisma.property.update({
@@ -511,9 +486,12 @@ exports.updatePropertyByUser = async (req, res) => {
                 status: 'pending',
                 // CORRECTED: Conditionally update images.
                 // If new images exist, create new records. Otherwise, do nothing.
-                images: newImageUrls.length > 0 ? {
-                    create: newImageUrls.map(url => ({ url }))
-                } : undefined
+                ...(newImageUrls.length > 0 && {
+                    images: {
+                        deleteMany: {}, // Delete old image records
+                        create: newImageUrls.map(url => ({ url })) // Create new ones
+                    }
+                })
             },
         });
         res.status(200).json(updatedProperty);
@@ -523,18 +501,16 @@ exports.updatePropertyByUser = async (req, res) => {
     }
 };
 
-/**
- * Deletes a property owned by the logged-in user.
- */
+
+
 exports.deletePropertyByUser = async (req, res) => {
     const { id } = req.params;
     const userId = req.user.userId;
 
     try {
-        // Find the property to ensure it exists and the user owns it.
         const propertyToDelete = await prisma.property.findUnique({
             where: { id: parseInt(id) },
-            include: { images: true } // Include images to delete them from the disk.
+            include: { images: true }
         });
 
         if (!propertyToDelete) {
@@ -545,18 +521,19 @@ exports.deletePropertyByUser = async (req, res) => {
             return res.status(403).json({ error: 'Forbidden: You can only delete your own properties.' });
         }
 
-        // ADDED: Logic to delete image files from the server's filesystem.
-        // Prisma's 'onDelete: Cascade' handles the database records, but not the physical files.
+        // 1. Delete images from Supabase Storage
         if (propertyToDelete.images && propertyToDelete.images.length > 0) {
-            propertyToDelete.images.forEach(image => {
-                const imagePath = path.join(__dirname, '..', '..', image.url);
-                if (fs.existsSync(imagePath)) {
-                    fs.unlinkSync(imagePath);
-                }
+            const imagePaths = propertyToDelete.images.map(image => {
+                 // Extract the path from the full URL
+                return image.url.substring(image.url.indexOf('/properties/'));
             });
+            
+            await supabase.storage
+                .from('real_estate_storage')
+                .remove(imagePaths);
         }
 
-        // Now, delete the property record from the database.
+        // 2. Delete the property record from the database (Prisma will cascade delete image records)
         await prisma.property.delete({ where: { id: parseInt(id) } });
 
         res.status(204).send();

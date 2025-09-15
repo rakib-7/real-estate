@@ -3,7 +3,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
 import { useAuth } from './AuthContext';
-//import { API_BASE_URL } from '@/lib/api'; 
 
 const SocketContext = createContext();
 
@@ -18,11 +17,9 @@ export const SocketProvider = ({ children }) => {
     useEffect(() => {
         // Only establish a connection if the user is authenticated.
         if (isAuthenticated) {
-            
+            // Connect to your backend's real-time server.
             const newSocket = io('http://localhost:5000');
             setSocket(newSocket);
-            // const socketUrl = API_BASE_URL.replace('/api', '');
-            // const newSocket = io(socketUrl);
 
             // Join the user's personal chat room upon connection.
             newSocket.emit('join_chat', user.userId);
@@ -30,7 +27,7 @@ export const SocketProvider = ({ children }) => {
             // Cleanup function to disconnect when the component unmounts or user logs out.
             return () => newSocket.disconnect();
         } else {
-            
+            // If the user logs out, ensure the socket is disconnected.
             if (socket) {
                 socket.disconnect();
                 setSocket(null);
