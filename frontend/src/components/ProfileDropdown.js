@@ -9,7 +9,6 @@ const ProfileDropdown = () => {
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef(null);
 
-    // This effect handles closing the dropdown if the user clicks outside of it.
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -28,10 +27,12 @@ const ProfileDropdown = () => {
 
     return (
         <div className="relative" ref={dropdownRef}>
-            {/* The clickable avatar */}
+           
             <button onClick={() => setIsOpen(!isOpen)} className="focus:outline-none">
                 <img
-                    src={user?.avatarUrl ? `${API_BASE_URL.replace('/api', '')}${user.avatarUrl}` : `https://placehold.co/40x40/6366f1/ffffff?text=${user?.email?.charAt(0).toUpperCase()}`}
+                    // src={user?.avatarUrl ? `${API_BASE_URL.replace('/api', '')}${user.avatarUrl}` : `https://placehold.co/40x40/6366f1/ffffff?text=${user?.email?.charAt(0).toUpperCase()}`}
+                    src={user?.avatarUrl ? user.avatarUrl : `https://placehold.co/40x40/6366f1/ffffff?text=${user?.email?.charAt(0).toUpperCase()}`}
+            
                     alt="User Avatar"
                     className="w-10 h-10 rounded-full object-cover border-2 border-transparent hover:border-indigo-500 transition-all"
                 />
