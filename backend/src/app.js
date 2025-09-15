@@ -66,6 +66,9 @@ io.on('connection', (socket) => {
 app.get('/api', (req, res) => {
     res.send('Real Estate Management System Backend API is running!');
 });
+app.get("/api/keep-alive", (req, res) => {
+  res.send("Server is alive and kicking!");
+});
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/properties', propertyRoutes);
