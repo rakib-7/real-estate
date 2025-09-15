@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { formatBdtPrice } from '@/lib/utils';
-import fetcher, { API_BASE_URL } from '@/lib/api';
+import fetcher from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
 import Button from '@/components/ui/Button';
 
@@ -76,7 +76,8 @@ export default function PropertyDetailsPage() {
                     {/* Main Image */}
                     <div className="col-span-3 row-span-2 md:col-span-2 h-full">
                         <img
-                            src={property.images && property.images.length > 0 ? `${API_BASE_URL.replace('/api', '')}${property.images[mainImageIndex].url}` : 'https://placehold.co/800x600?text=No+Image'}
+                            // src={property.images && property.images.length > 0 ? `${API_BASE_URL.replace('/api', '')}${property.images[mainImageIndex].url}` : 'https://placehold.co/800x600?text=No+Image'}
+                             src={property.images && property.images.length > 0 ? property.images[mainImageIndex].url : 'https://placehold.co/800x600?text=No+Image'}
                             alt={property.title}
                             className="w-full h-full object-cover rounded-2xl shadow-lg"
                         />
@@ -86,7 +87,8 @@ export default function PropertyDetailsPage() {
                         {property.images && property.images.slice(0, 3).map((image, index) => (
                             <img
                                 key={image.id}
-                                src={`${API_BASE_URL.replace('/api', '')}${image.url}`}
+                                // src={`${API_BASE_URL.replace('/api', '')}${image.url}`}
+                                src={image.url}
                                 alt={`Thumbnail ${index + 1}`}
                                 onClick={() => setMainImageIndex(index)}
                                 className={`w-full h-full object-cover rounded-xl cursor-pointer transition-opacity duration-300 ${mainImageIndex === index ? 'opacity-100 border-4 border-indigo-500' : 'opacity-70 hover:opacity-100'}`}
