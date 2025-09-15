@@ -18,20 +18,35 @@ dotenv.config();
 const app = express();
 const server = http.createServer(app);
 
+const allowedOrigins = [
+    'http://localhost:3000'
+];
+
+
+if (process.env.CORS_ORIGIN) {
+    allowedOrigins.push(process.env.CORS_ORIGIN);
+}
 
 const io = new Server(server, {
     cors: {
-        origin: "http://localhost:3000", 
+        origin: "allowedOrigins", 
         methods: ["GET", "POST"]
     }
 });
 
 
-// MIDDLEWARE SETUP 
 app.use(cors({
-    origin: 'http://localhost:3000',
+    origin: function (origin, callback) {
+        if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     credentials: true,
 }));
+
+//middlewares
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '15mb' }));
 app.use(cookieParser());
