@@ -1,4 +1,6 @@
+
 'use client';
+
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { useRouter } from 'next/navigation';
 import fetcher from '@/lib/api'; 
@@ -20,7 +22,7 @@ export const AuthProvider = ({ children }) => {
       console.log('AuthContext: About to call fetcher("/auth/status")');
       const data = await fetcher('/auth/status'); // Backend checks cookie and returns user data
       console.log('AuthContext: Auth status check successful:', data);
-     
+     // setUser({ userId: data.userId, email: data.email, role: data.role });
      setUser(data);
     } catch (error) {
       console.log('AuthContext: Auth status check failed:', error.message);
@@ -47,7 +49,7 @@ export const AuthProvider = ({ children }) => {
       });
       console.log('AuthContext: Login SUCCESS. Response data:', data);
       // Backend now sets HttpOnly cookie. Frontend receives role and userId in JSON.
-     
+      //setUser({ userId: data.userId, email: email, role: data.role });
       setUser(data);
       console.log('AuthContext: User state updated after login:', { userId: data.userId, email: email, role: data.role });
       
