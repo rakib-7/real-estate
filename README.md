@@ -4,8 +4,7 @@ RealEstate is a full-stack web application designed to modernize the property bu
 
 ## Live Application URL
 
-**Frontend Deployed on Vercel:** 
-**Backend Deployed on Render:** 
+https://real-estate-sandy-beta.vercel.app
 
 ---
 
@@ -43,7 +42,8 @@ RealEstate is a full-stack web application designed to modernize the property bu
 ### Deployment
 * **Frontend:** Vercel
 * **Backend:** Render
-* **Database:** Render PostgreSQL
+* **Database:** NeonDB
+* **Storage Solution:** Supabase
 
 ---
 
@@ -97,8 +97,8 @@ npm run dev
 The application can be tested using the following sample credentials:
 
 * **Admin Account:**
-    * **Email:** `admin@gmail.com`
-    * **Password:** `admin123`
+    * **Email:** `admintest@gmail.com`
+    * **Password:** `admin216377`
 
 * **User Account:**
     * **Email:** `rakib@gmail.com` (or any newly registered user)
