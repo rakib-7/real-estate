@@ -14,15 +14,21 @@ brevo.setApiKey(
   process.env.BREVO_API_KEY
 );
 
-async function sendEmail(to, subject, text) {
-  return brevo.sendTransacEmail({
-    sender: { email: process.env.SENDER_EMAIL, name: "Real Estate Support" },
-    to: [{ email: to }],
-    subject,
-    textContent: text,
-  });
-}
+async function sendEmail(to, subject, textContent) {
+  const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
+  sendSmtpEmail.sender = { email: process.env.SENDER_EMAIL, name: "RealEstatePro Support" };
+  sendSmtpEmail.to = [{ email: to }];
+  sendSmtpEmail.subject = subject;
+  sendSmtpEmail.textContent = textContent;
 
+  try {
+    await brevoApi.sendTransacEmail(sendSmtpEmail);
+    console.log(`Email sent successfully to ${to}`);
+  } catch (error) {
+    console.error(`Failed to send email to ${to}:`, error.body ? error.body.message : error.message);
+    throw new Error('Email sending service failed.');
+  }
+}
 
 exports.register = async (req, res) => {
     const { email, password, name, phoneNumber, location } = req.body;
@@ -41,6 +47,7 @@ exports.register = async (req, res) => {
                 phoneNumber: phoneNumber,
                 location: location || null,
                 emailVerificationToken,
+                isEmailVerified: false, 
             },
         });
 
