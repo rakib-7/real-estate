@@ -1,15 +1,19 @@
-//frontend/lib/api.js 
-import React, { useState, useEffect, createContext, useContext } from 'react';
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000';
+// --- frontend/lib/api.js ---
 
+import React, { useState, useEffect, createContext, useContext } from 'react';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ||'http://localhost:5000';
+//const API_ROUTE_BASE = `${API_BASE_URL}`;
 
 async function fetcher(url, options = {}) {
+   console.log('Fetcher: Called with URL:', url, 'Options:', options); // <--- ADD THIS LOG
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
 
   const headers = {
     //'content-Type': 'application/json',
     ...options.headers,
   };
 
+  
   if (!(options.body instanceof FormData)) {
     headers['Content-Type'] = 'application/json';
   }
@@ -19,7 +23,7 @@ async function fetcher(url, options = {}) {
   // }
 
   const fullUrl = `${API_BASE_URL}${url}`;
-  
+  console.log('Fetcher: Making request to:', fullUrl);
 
   try {
     const res = await fetch(fullUrl, {

@@ -27,7 +27,7 @@ export const formatBdtPrice = (price) => {
   } else if (numericPrice >= 100000) { // 1 Lakh or more
     const lakh = (numericPrice / 100000).toFixed(2);
     // Remove .00 if it's a whole number
-    return `৳ ${parseFloat(lakh)} Lakh`;
+    return `৳ ${parseFloat(lakh)} Lac`;
   } else {
     // For prices below 1 Lakh, show the regular number with commas
     return `৳ ${numericPrice.toLocaleString('en-IN')}`;
@@ -51,4 +51,3 @@ export const locationsData = {
   }
 };
 
-// export {formatPrice};

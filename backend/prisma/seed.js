@@ -1,13 +1,13 @@
-//It will be run once to create the first admin user.
+// This is your seed script. It will be run once to create the first admin user.
 const { PrismaClient } = require('@prisma/client');
 const bcrypt = require('bcryptjs');
 const prisma = new PrismaClient();
 
 async function main() {
-    const adminEmail = 'admin@test.com';
-    const adminPassword = 'admin123';
+    const adminEmail = 'admintest@gmail.com';
+    const adminPassword = 'admin216377';
 
-   
+    console.log(`Checking for existing admin user with email: ${adminEmail}`);
 
     // Check if the admin user already exists to avoid errors
     const existingAdmin = await prisma.user.findUnique({
@@ -30,8 +30,9 @@ async function main() {
             email: adminEmail,
             password: hashedPassword,
             name: 'Super Admin',
-            phoneNumber: '01871602487',
+            phoneNumber: '01234567890',
             role: 'ADMIN',
+            // IMPORTANT: Mark the admin's email as verified by default
             isEmailVerified: true, 
         },
     });

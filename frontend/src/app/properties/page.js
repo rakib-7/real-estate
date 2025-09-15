@@ -95,45 +95,30 @@ const PropertiesPageContent = () => {
 
     
     return (
-        // The main background color is now handled by the layout wrapper.
         <div className="min-h-screen flex flex-col">
+            {/* --- Banner Section --- */}
+            {banners.length > 0 && (
+                <section className="relative w-full h-80 rounded-b-3xl flex items-center justify-center overflow-hidden shadow-2xl group">
+                    <img
+                        src={banners[0].imageUrl}
+                        alt={banners[0].title}
+                        className="absolute inset-0 w-full h-full object-cover transition-transform duration-[5000ms] ease-in-out group-hover:scale-110"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-r from-indigo-900/70 via-purple-900/50 to-black/30"></div>
+                    <div className="relative z-10 text-center p-8">
+                        <h1 className="text-5xl font-extrabold text-white mb-3 drop-shadow-lg">
+                            {banners[0].title}
+                        </h1>
+                        <p className="text-xl text-indigo-200 max-w-2xl mx-auto">
+                            {banners[0].description}
+                        </p>
+                    </div>
+                </section>
+            )}
+            
             <main className="container mx-auto p-8 flex-grow">
-                
-                {/* --- Banner Section with Dark Mode --- */}
-                {banners.length > 0 && (
-                    <section className="relative w-full h-80 rounded-3xl flex items-center justify-center overflow-hidden shadow-2xl mb-16 group">
-                        <img
-                            src={`${API_BASE_URL.replace('/api', '')}${banners[0].imageUrl}`}
-                            alt={banners[0].title}
-                            className="absolute inset-0 w-full h-full object-cover transition-transform duration-[5000ms] ease-in-out group-hover:scale-110"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-r from-indigo-900/70 via-purple-900/50 to-black/30"></div>
-                        <div className="relative z-10 text-center p-8 animate-fade-in-up">
-                             <style jsx>{`
-                                @keyframes fade-in-up {
-                                    from { opacity: 0; transform: translateY(30px); }
-                                    to { opacity: 1; transform: translateY(0); }
-                                }
-                                .animate-fade-in-up {
-                                    animation: fade-in-up 0.8s ease-out forwards;
-                                }
-                            `}</style>
-                            <h1 className="text-5xl font-extrabold text-white mb-3 drop-shadow-lg">
-                                {banners[0].title}
-                            </h1>
-                            <p className="text-xl text-indigo-200 max-w-2xl mx-auto">
-                                {banners[0].description}
-                            </p>
-                        </div>
-                    </section>
-                )}
-
-
-                <h1 className="text-4xl font-bold mb-4 text-gray-800 dark:text-white text-center">Browse Properties</h1>
-                <p className="text-lg text-gray-600 dark:text-gray-400 mb-8 text-center">Find the perfect property that meets your needs.</p>
-                
-               
-                <div className="w-full max-w-4xl mx-auto mb-12">
+                {/* --- Search Section --- */}
+                <div className="w-full max-w-4xl mx-auto mb-12 -mt-32 relative z-10">
                     <div className="bg-white/60 dark:bg-gray-800/20 backdrop-blur-sm p-3 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-xl">
                         <form onSubmit={handleSearchSubmit} className="bg-white dark:bg-gray-800 p-4 rounded-xl">
                             <div className="flex items-center">
@@ -175,12 +160,15 @@ const PropertiesPageContent = () => {
                     </div>
                 </div>
 
+                {/* --- Property Grid --- */}
                 {loading && <p className="text-center text-gray-600 dark:text-gray-400 text-lg">Loading properties...</p>}
                 {error && <p className="text-center p-8 text-red-500 text-xl">Error: {error}</p>}
                 {!loading && !error && properties.length === 0 && (
-                    <p className="text-center text-gray-600 dark:text-gray-400 text-lg">No properties found. Please try a different search.</p>
+                    <div className="text-center py-20 bg-white dark:bg-gray-800 rounded-2xl shadow-md">
+                        <h3 className="mt-2 text-lg font-medium text-gray-900 dark:text-white">No Properties Found</h3>
+                        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Please try a different search or filter.</p>
+                    </div>
                 )}
-
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
                     {properties.map(property => (
                         <PropertyCard key={property.id} property={property} />
@@ -191,8 +179,7 @@ const PropertiesPageContent = () => {
     );
 }
 
-// This is the main export for the page. It wraps the content in a Suspense boundary,
-// which is required for using the useSearchParams hook.
+// This is the main export for the page. It wraps the content in a Suspense boundary.
 export default function PropertiesPage() {
     return (
         <Suspense fallback={<div className="text-center p-8 text-xl text-gray-700 dark:text-gray-300">Loading Search...</div>}>

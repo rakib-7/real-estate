@@ -31,7 +31,9 @@ const ProfileDropdown = () => {
             {/* The clickable avatar */}
             <button onClick={() => setIsOpen(!isOpen)} className="focus:outline-none">
                 <img
-                    src={user?.avatarUrl ? `${API_BASE_URL.replace('/api', '')}${user.avatarUrl}` : `https://placehold.co/40x40/6366f1/ffffff?text=${user?.email?.charAt(0).toUpperCase()}`}
+                    // src={user?.avatarUrl ? `${API_BASE_URL.replace('/api', '')}${user.avatarUrl}` : `https://placehold.co/40x40/6366f1/ffffff?text=${user?.email?.charAt(0).toUpperCase()}`}
+                    src={user?.avatarUrl ? user.avatarUrl : `https://placehold.co/40x40/6366f1/ffffff?text=${user?.email?.charAt(0).toUpperCase()}`}
+            
                     alt="User Avatar"
                     className="w-10 h-10 rounded-full object-cover border-2 border-transparent hover:border-indigo-500 transition-all"
                 />

@@ -1,5 +1,8 @@
 const express = require('express');
 const multer = require('multer');
+// const { CloudinaryStorage } = require('multer-storage-cloudinary');
+// const cloudinary = require('cloudinary').v2;
+
 const path = require('path');
 const {
     bookmarkProperty,
@@ -18,47 +21,39 @@ const { authenticateToken } = require('../middlewares/authMiddleware.js');
 
 const router = express.Router();
 
-// COMMENTED OUT: This entire old multer configuration block is now replaced by the new one below.
-/*
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        // All user-submitted images go to the 'properties' folder.
-        cb(null, 'uploads/properties/');
-    },
-    filename: function (req, file, cb) {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
-    }
-});
 
-const upload = multer({ 
-    storage: storage,
-    limits: { fileSize: 15 * 1024 * 1024 }, // 15MB limit
-    fileFilter: (req, file, cb) => {
-        if (file.mimetype.startsWith('image/')) {
-            cb(null, true);
-        } else {
-            cb(new Error('Only image files are allowed!'), false);
-        }
-    }
-});
-*/
+// cloudinary.config({
+//     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+//     api_key: process.env.CLOUDINARY_API_KEY,
+//     api_secret: process.env.CLOUDINARY_API_SECRET,
+// });
 
-// CORRECTED: This is the single, correct multer configuration for this file.
+// // This function creates a new storage engine for Cloudinary.
+// const createCloudinaryStorage = (folder) => {
+//     return new CloudinaryStorage({
+//         cloudinary: cloudinary,
+//         params: {
+//             folder: `real_estate/${folder}`, // Organizes uploads into folders in Cloudinary
+//             allowed_formats: ['jpg', 'png', 'jpeg'],
+//         },
+//     });
+// };
+
 // It can handle uploads to different folders (properties vs. avatars).
-const createMulterStorage = (folder) => {
-    return multer.diskStorage({
-        destination: (req, file, cb) => {
-            // We create subfolders for organization
-            cb(null, `uploads/${folder}/`);
-        },
-        filename: (req, file, cb) => {
-            const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-            const filename = `${file.fieldname}-${req.user.userId}-${uniqueSuffix}${path.extname(file.originalname)}`;
-            cb(null, filename);
-        }
-    });
-};
+// const createMulterStorage = (folder) => {
+//     return multer.diskStorage({
+//         destination: (req, file, cb) => {
+//             // We create subfolders for organization
+//             cb(null, `uploads/${folder}/`);
+//         },
+//         filename: (req, file, cb) => {
+//             const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+//             const filename = `${file.fieldname}-${req.user.userId}-${uniqueSuffix}${path.extname(file.originalname)}`;
+//             cb(null, filename);
+//         }
+//     });
+// };
+const storage = multer.memoryStorage();
 
 const fileFilter = (req, file, cb) => {
     if (file.mimetype.startsWith('image/')) {
@@ -68,9 +63,13 @@ const fileFilter = (req, file, cb) => {
     }
 };
 
+const upload = multer({storage, fileFilter });
+
 // Create separate uploaders for each type of upload
-const uploadProperties = multer({ storage: createMulterStorage('properties'), fileFilter });
-const uploadAvatar = multer({ storage: createMulterStorage('avatars'), fileFilter });
+// const uploadProperties = multer({ storage: createMulterStorage('properties'), fileFilter });
+// const uploadAvatar = multer({ storage: createMulterStorage('avatars'), fileFilter });
+// const uploadProperties = multer({ storage: createCloudinaryStorage('properties'), fileFilter });
+// const uploadAvatar = multer({ storage: createCloudinaryStorage('avatars'), fileFilter });
 
 
 router.use(authenticateToken);
@@ -79,8 +78,8 @@ router.use(authenticateToken);
 router.get('/profile', getUserProfile);
 router.put('/profile', updateUserProfile);
 // This route now correctly uses the 'uploadAvatar' middleware
-router.post('/profile/avatar', uploadAvatar.single('avatar'), handleUploadAvatar);
-
+//router.post('/profile/avatar', uploadAvatar.single('avatar'), handleUploadAvatar);
+router.post('/profile/avatar', upload.single('avatar'), handleUploadAvatar);
 
 // Bookmark Management
 router.post('/bookmarks', bookmarkProperty);
@@ -89,9 +88,10 @@ router.get('/bookmarks', getBookmarkedProperties);
 
 // User-Added Properties Management
 // These routes now correctly use the 'uploadProperties' middleware
-router.post('/properties', uploadProperties.array('images', 10), createPropertyByUser);
+//router.post('/properties', uploadProperties.array('images', 10), createPropertyByUser);
+router.post('/properties', upload.array('images', 10), createPropertyByUser);
 router.get('/properties', getPropertiesCreatedByUser);
-router.put('/properties/:id', uploadProperties.array('images', 10), updatePropertyByUser);
+router.put('/properties/:id', upload.array('images', 10), updatePropertyByUser);
 router.delete('/properties/:id', deletePropertyByUser);
 
 module.exports = router;
