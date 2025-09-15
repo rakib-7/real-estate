@@ -1,14 +1,14 @@
-// frontend/src/context/AuthContext.js
+
 'use client';
 
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { useRouter } from 'next/navigation';
-import fetcher from '@/lib/api'; // Assuming lib/api.js is correctly set up
+import fetcher from '@/lib/api'; 
 
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null); // { userId, email, role }
+  const [user, setUser] = useState(null); 
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   
@@ -22,7 +22,8 @@ export const AuthProvider = ({ children }) => {
       console.log('AuthContext: About to call fetcher("/auth/status")');
       const data = await fetcher('/auth/status'); // Backend checks cookie and returns user data
       console.log('AuthContext: Auth status check successful:', data);
-      setUser({ userId: data.userId, email: data.email, role: data.role });
+     // setUser({ userId: data.userId, email: data.email, role: data.role });
+     setUser(data);
     } catch (error) {
       console.log('AuthContext: Auth status check failed:', error.message);
       console.log('AuthContext: Error details:', error);
@@ -48,11 +49,12 @@ export const AuthProvider = ({ children }) => {
       });
       console.log('AuthContext: Login SUCCESS. Response data:', data);
       // Backend now sets HttpOnly cookie. Frontend receives role and userId in JSON.
-      setUser({ userId: data.userId, email: email, role: data.role });
+      //setUser({ userId: data.userId, email: email, role: data.role });
+      setUser(data);
       console.log('AuthContext: User state updated after login:', { userId: data.userId, email: email, role: data.role });
       
       // Immediately check auth status after login to ensure cookie is set
-      await checkAuthStatus();
+      //await checkAuthStatus();
       
       return data; // Return data for redirection logic in LoginPage
     } catch (error) {
@@ -81,6 +83,12 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // This function simply calls checkAuthStatus to get the latest user data from the server.
+    const revalidateUser = async () => {
+        console.log('AuthContext: Revalidating user data...');
+        await checkAuthStatus();
+    };
+
   // Provide user, login, logout, and loading status to children
   const authContextValue = {
     user,
@@ -89,7 +97,8 @@ export const AuthProvider = ({ children }) => {
     login,
     logout,
     loading,
-    checkAuthStatus
+    //checkAuthStatus
+    revalidateUser
   };
   
   console.log('AuthContext: Render. State: isAuthenticated=', authContextValue.isAuthenticated, 'isAdmin=', authContextValue.isAdmin, 'loading=', authContextValue.loading, 'user=', authContextValue.user);
