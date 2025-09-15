@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import Modal from '@/components/ui/Modal';
-import fetcher, { API_BASE_URL } from '@/lib/api';
+import fetcher from '@/lib/api';
 
 export default function BannersPage() {
     const [banners, setBanners] = useState([]);
@@ -170,7 +170,8 @@ export default function BannersPage() {
                     <div key={banner.id} className="bg-white rounded-2xl shadow-lg overflow-hidden group transform hover:-translate-y-2 transition-all duration-300">
                         <div className="relative h-56 bg-gray-200">
                             <img
-                                src={`${API_BASE_URL.replace('/api', '')}${banner.imageUrl}`}
+                                // src={`${API_BASE_URL.replace('/api', '')}${banner.imageUrl}`}
+                                src={banner.imageUrl}
                                 alt={banner.title}
                                 // THIS IS THE FIX: 'object-contain' shows the full image without cropping.
                                 className="absolute inset-0 w-full h-full object-cover "
