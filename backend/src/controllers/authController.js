@@ -22,7 +22,7 @@ async function sendEmail(to, subject, textContent) {
   sendSmtpEmail.textContent = textContent;
 
   try {
-    await brevoApi.sendTransacEmail(sendSmtpEmail);
+    await brevo.sendTransacEmail(sendSmtpEmail);
     console.log(`Email sent successfully to ${to}`);
   } catch (error) {
     console.error(`Failed to send email to ${to}:`, error.body ? error.body.message : error.message);
