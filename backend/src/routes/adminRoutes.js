@@ -13,48 +13,25 @@ const {
   updatePropertyStatus,
   // Banner management
   getAllBanners,
-  getBannerById,
+  getPublicBanners,
   updateBanner,
-  deleteBanner
+  deleteBanner,
+  //getPublicBanners
 } = require('../controllers/adminController.js');
 const { authenticateToken, authorizeRole } = require('../middlewares/authMiddleware.js');
 
 const router = express.Router();
 
-// Configure multer for image uploads
-const storage = multer.diskStorage({
-  destination: function (req,file,cb) {
-//  if (req.baseUrl.includes('banners')) {
-//       cb(null, 'uploads/banners/');
-//     } else {
-//       cb(null, 'uploads/properties/');
-//     }
-   if (req.originalUrl.includes('/banners')) {
-        cb(null, 'uploads/banners/');
-    } else {
-        cb(null, 'uploads/properties/');
-    }
-  },
-  filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
-  }
-});
 
-const upload = multer({ 
-  storage: storage,
-  limits: {
-    fileSize: 15 * 1024 * 1024 // 15MB limit
-  },
-  fileFilter: (req, file, cb) => {
+const storage = multer.memoryStorage();
+const fileFilter = (req, file, cb) => {
     if (file.mimetype.startsWith('image/')) {
-      cb(null, true);
+        cb(null, true); 
     } else {
-      cb(new Error('Only image files are allowed!'), false);
-    }
-  }
-
-});
+        cb(new Error('Only image files are allowed!'), false);
+    } 
+};
+const upload = multer({storage, fileFilter });
 
 router.use(authenticateToken);
 router.use(authorizeRole(['ADMIN'])); // All routes in this router require 'admin' role
@@ -66,13 +43,9 @@ router.put('/properties/:id',upload.array('images', 10), updateProperty);
 router.delete('/properties/:id', deleteProperty);
 router.put('/properties/:id/status', updatePropertyStatus);
 
-// // Inquiry Management
-// router.get('/inquiries', getInquiries);
-// router.put('/inquiries/:id/respond', respondToInquiry);
-
 // Banner Management
 router.get('/banners', getAllBanners);
-router.get('/banners/:id', getBannerById);
+router.get('/banners/:id', getPublicBanners);
 router.post('/banners', upload.single('image'), uploadBanner);
 router.put('/banners/:id', upload.single('image'), updateBanner);
 router.delete('/banners/:id', deleteBanner);
