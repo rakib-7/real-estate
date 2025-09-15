@@ -13,7 +13,7 @@ import * as Tone from 'tone';
 
 export default function HomePage() {
     const router = useRouter();
-    const { isAuthenticated } = useAuth();
+    const { isAuthenticated, loading: authLoading } = useAuth();
     const [banners, setBanners] = useState([]);
     const [properties, setProperties] = useState([]);
     const [loading, setLoading] = useState(true);
