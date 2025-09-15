@@ -21,7 +21,7 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
     cors: {
-        origin: process.env.CORS_ORIGIN || "http://localhost:3000", 
+        origin: "http://localhost:3000", 
         methods: ["GET", "POST"]
     }
 });
@@ -29,14 +29,14 @@ const io = new Server(server, {
 
 // MIDDLEWARE SETUP 
 app.use(cors({
-    origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+    origin: 'http://localhost:3000',
     credentials: true,
 }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '15mb' }));
 app.use(cookieParser());
 app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
-//app.use('/api/chat', chatRoutes); // ADDED: Use the chat routes
+//app.use('/api/chat', chatRoutes); 
 
 
 // This block listens for real-time events.
@@ -52,12 +52,7 @@ io.on('connection', (socket) => {
 
     // Event for when a new message is sent from a client.
     socket.on('send_message', (data) => {
-        // 'data' will contain { content, senderId, chatId (which is the userId) }
-        // In a full implementation, you would save this message to the database here.
-        
-        // Broadcast the received message to all clients in that specific room.
-        // This ensures both the user and any listening admin receive the message instantly.
-        socket.broadcast.to(data.chatId.toString()).emit('receive_message', data);
+        io.to(data.chatId.toString()).emit('receive_message', data);
     });
     // Event for when a user disconnects.
     socket.on('disconnect', () => {

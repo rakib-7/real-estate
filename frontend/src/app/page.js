@@ -29,6 +29,8 @@ export default function HomePage() {
         suggestedByBookmarks: false,
     });
     const [isSticky, setIsSticky] = useState(false);
+    const clickSynth = new Tone.Synth().toDestination();
+    const pluckSynth = new Tone.PluckSynth().toDestination();
 
     // All existing functions (useEffect, handleSearchChange, etc.) 
     useEffect(() => {
@@ -74,59 +76,35 @@ export default function HomePage() {
     };
     
 
-    // ADDED: Sound Effects for UI
-    const playClickSound = () => {
-        // Creates a simple, short synth sound for clicks.
-        const synth = new Tone.Synth().toDestination();
-        synth.triggerAttackRelease("C5", "8n");
+    const playClickSound = async () => {
+       
+        if (Tone.context.state !== 'running') {
+            await Tone.start();
+        }
+        clickSynth.triggerAttackRelease("C5", "8n");
     };
 
-    const playToggleSound = () => {
-        // Creates a subtle pluck sound for toggles.
-        const synth = new Tone.PluckSynth().toDestination();
-        synth.triggerAttack("C4", Tone.now());
+    const playToggleSound = async () => {
+        
+        if (Tone.context.state !== 'running') {
+            await Tone.start();
+        }
+        pluckSynth.triggerAttack("C4", Tone.now());
     };
-
-    
-
-
-    
-    /*
-    return (
-        <div className="min-h-screen flex flex-col bg-gradient-to-br from-blue-50 to-purple-50">
-            <header className={`sticky top-0 z-50 ...`}>
-                // ... old sticky banner ...
-            </header>
-            <main className="flex-grow">
-                <section className="relative w-full h-96 ...">
-                    // ... old main banner ...
-                </section>
-                <section className="relative -mt-16 z-20 ...">
-                    // ... old search form ...
-                </section>
-                <section className="container mx-auto p-8 mt-8 flex-grow">
-                    // ... old property list ...
-                </section>
-            </main>
-            <footer className="w-full bg-white ...">
-                // ... old footer ...
-            </footer>
-        </div>
-    );
-    */
 
     
     return (
         <div className="min-h-screen flex flex-col ">
             
-            <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
+           
 
             <header className={`sticky top-0 z-50 w-full bg-white/80 backdrop-blur-md shadow-lg transition-transform duration-300 ease-in-out ${isSticky ? 'translate-y-0' : '-translate-y-full'}`}>
                 <div className="container mx-auto flex items-center justify-between p-3">
                     <div className="flex items-center">
                         {banners.length > 0 && (
                             <img
-                                src={`${API_BASE_URL.replace('/api', '')}${banners[0].imageUrl}`}
+                                // src={`${API_BASE_URL.replace('/api', '')}${banners[0].imageUrl}`}
+                                src = {banners[0].imageUrl}
                                 alt={banners[0].title}
                                 className="w-12 h-12 object-cover rounded-lg mr-4 shadow-md"
                             />
@@ -149,9 +127,10 @@ export default function HomePage() {
                     {banners.length > 0 && (
                         <div className="absolute inset-0 w-full h-full">
                             <img
-                                src={`${API_BASE_URL.replace('/api', '')}${banners[0].imageUrl}`}
+                                // src={`${API_BASE_URL.replace('/api', '')}${banners[0].imageUrl}`}
+                                src = {banners[0].imageUrl}
                                 alt={banners[0].title}
-                                className="w-full h-full object-cover animate-zoom"
+                                className="w-full h-full object-cover  animate-zoom"
                             />
                             <style jsx>{`
                                 @keyframes zoom {
@@ -239,9 +218,6 @@ export default function HomePage() {
                  
 
             </main>
-            {/* <footer className="w-full bg-white shadow-inner p-8 text-center text-gray-600 border-t">
-                &copy; {new Date().getFullYear()} RealEstatePro. All rights reserved.
-            </footer> */}
         </div>
     );
 }

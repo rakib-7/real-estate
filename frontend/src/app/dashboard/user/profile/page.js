@@ -42,7 +42,8 @@ export default function UserProfilePage() {
                 avatarUrl: data.avatarUrl || '' // ADDED: Fetch the avatar URL.
             });
             if (data.avatarUrl) {
-                setAvatarPreview(`${API_BASE_URL.replace('/api', '')}${data.avatarUrl}`);
+                //setAvatarPreview(`${API_BASE_URL.replace('/api', '')}${data.avatarUrl}`);
+                setAvatarPreview(data.avatarUrl);
             }
         } catch (err) {
             setError(err.message);
@@ -130,22 +131,9 @@ export default function UserProfilePage() {
         return <div className="text-center p-8 text-red-500 text-xl">Error: {error}</div>;
     }
 
-    // COMMENTED OUT: Your entire old return statement is replaced by the new redesigned version below.
-    /*
-    return (
-        <>
-            <h2 className="text-3xl font-bold mb-8 text-gray-800">My Profile</h2>
-            <form onSubmit={handleProfileSubmit} className="bg-white p-8 rounded-2xl shadow-xl border border-gray-100">
-                // ... old form inputs ...
-                <div className="flex justify-end space-x-4 mt-8">
-                    // ... old buttons ...
-                </div>
-            </form>
-        </>
-    );
-    */
+    
 
-    // CORRECTED: The new, "dashing" UI for the profile page with picture upload.
+    
     return (
         <>
             <div className="flex justify-between items-center mb-8">

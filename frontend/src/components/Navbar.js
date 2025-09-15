@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Button from '@/components/ui/Button';
 import { useAuth } from 'src/context/AuthContext';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
-import ThemeSwitcher from '@/components/ThemeSwitcher'; // Make sure this component exists
+import ThemeSwitcher from '@/components/ThemeSwitcher'; 
 import { useTheme } from '@/context/ThemeContext';
 import { SunIcon, MoonIcon } from '@heroicons/react/24/solid';
 import { API_BASE_URL } from '@/lib/api';
@@ -19,12 +19,9 @@ const Navbar = () => {
     const {theme, toggleTheme} = useTheme();
     const { t } = useTranslation();
 
-    // const handleLogout = () => {
-    //     logout();
-    // };
-
+    
     if(loading){
-        // A more subtle loading state that doesn't cause layout shifts.
+       
         return (
             <nav className="sticky top-0 z-[60] bg-white/80 backdrop-blur-md border-b border-gray-200">
                 <div className="container mx-auto flex justify-between items-center p-4 h-[72px]">
@@ -37,15 +34,17 @@ const Navbar = () => {
 
     
 
-    // CORRECTED: A new, redesigned "dashing" Navbar with all buttons and links.
+   
     return (
         <nav className="sticky top-0 z-[60] bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-700">
             <div className="container mx-auto flex justify-between items-center p-4">
                 {/* Left Side: Logo and Main Navigation */}
                 <div className="flex items-center space-x-10">
-                    <Link href="/" className="text-3xl font-bold text-gray-800 dark:text-white">
-                        RealEstate<span className="text-indigo-600 dark:text-indigo-400"></span>
+                   
+                    <Link href="/">
+                        <img src="/images/logo.png" alt= "RealEstate Logo" className="h-20 w-auto" />
                     </Link>
+
                     <div className=" md:flex items-center space-x-8">
                         <Link href="/properties" className={`text-2xl font-medium transition-colors duration-300 ${pathname === '/properties' ? 'text-indigo-600 dark:text-indigo-400  border-indigo-600' : 'text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-white'}`}>
                            {t('browseProperties')}
@@ -66,7 +65,7 @@ const Navbar = () => {
                     {/* Right Side: Actions and Language Switcher */}
                 <div className="flex items-center space-x-4">
                     <LanguageSwitcher />
-{/* ADDED: The new icon-based theme switcher button. */}
+
                     <button
                         onClick={toggleTheme}
                         title="Toggle Dark Mode"

@@ -55,7 +55,7 @@ export default function SignupPage() {
                     <input type="tel" placeholder="Phone Number" value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} required autoComplete='phoneNumber'/>
                     <input type="text" placeholder="Location" value={location} onChange={(e) => setLocation(e.target.value)} autoComplete='location'/>
                     <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required autoComplete='password'/>
-                    {error && <p className="text-red-500 text-center mt-4 text-sm">{error}</p>}
+                    {error && <p className="text-red-500 dark:text-red-400 text-center mt-4 text-sm">{error}</p>}
                     <button type="submit" disabled={loading}>{loading ? 'Creating Account...' : 'Sign Up'}</button>
                 </form>
                 )}

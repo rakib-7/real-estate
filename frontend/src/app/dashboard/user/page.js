@@ -6,8 +6,6 @@ import Link from 'next/link'; // Ensure Link is imported for PropertyCard
 import PropertyCard from '@/components/PropertyCard';
 import { useAuth } from '@/context/AuthContext';
 import fetcher from '@/lib/api';
-// Button is not directly used in this specific page's JSX, but often useful in related components.
-// import Button from '@/components/ui/Button';
 
 export default function UserDashboardPage() {
   const router = useRouter();
@@ -17,10 +15,7 @@ export default function UserDashboardPage() {
   const [loadingBookmarks, setLoadingBookmarks] = useState(true);
   const [errorBookmarks, setErrorBookmarks] = useState(null);
 
-  // This page will primarily display bookmarked properties.
-  // Other tabs (inquiries, my-properties, profile) will be handled by their own page.js files
-  // within the /dashboard/user/ subdirectories.
-  // The activeTab logic here is mainly for the DashboardLayout component's styling.
+  
   const activeTab = pathname.startsWith('/dashboard/user/inquiries') ? 'my-inquiries' :
                      pathname.startsWith('/dashboard/user/my-properties') ? 'my-properties' :
                      pathname.startsWith('/dashboard/user/profile') ? 'profile' :
@@ -100,9 +95,7 @@ export default function UserDashboardPage() {
         )}
       </div>
 
-      {/* Note: The content for 'My Inquiries', 'My Properties', and 'My Profile'
-           is now handled by their respective page.js files in subdirectories.
-           The DashboardLayout component handles the tab navigation. */}
+      
     </>
   );
 }

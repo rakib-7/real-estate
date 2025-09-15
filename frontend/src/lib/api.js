@@ -1,25 +1,23 @@
-//frontend/lib/api.js 
 import React, { useState, useEffect, createContext, useContext } from 'react';
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ||'http://localhost:5000';
 
 
 async function fetcher(url, options = {}) {
+   console.log('Fetcher: Called with URL:', url, 'Options:', options); 
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
 
   const headers = {
     //'content-Type': 'application/json',
     ...options.headers,
   };
 
+  
   if (!(options.body instanceof FormData)) {
     headers['Content-Type'] = 'application/json';
   }
 
-  // if (token) {
-  //   headers['Authorization'] = `Bearer ${token}`;
-  // }
-
   const fullUrl = `${API_BASE_URL}${url}`;
-  
+  console.log('Fetcher: Making request to:', fullUrl);
 
   try {
     const res = await fetch(fullUrl, {
@@ -29,12 +27,7 @@ async function fetcher(url, options = {}) {
     });
      console.log('Fetcher: Response received for URL:', url, 'Status:', res.status); // <--- ADD THIS LOG
     if (res.status === 401 || res.status === 403) {
-      // if (typeof window !== 'undefined') {
-      //   localStorage.removeItem('token');
-      //   localStorage.removeItem('userRole');
-      //   localStorage.removeItem('userId');
-      //   window.location.href = '/login';
-      // }
+     
       throw new Error('Authentication failed or session expired. Please log in again.');
     }
 

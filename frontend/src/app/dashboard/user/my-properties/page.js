@@ -66,8 +66,11 @@ export default function MyPropertiesPage() {
     };
 
     const handleAddProperty = () => {
-        setSelectedProperty(null);
-        setShowPropertyForm(true);
+        
+            // If the limit is NOT reached, open the form as normal.
+            setSelectedProperty(null);
+            setShowPropertyForm(true);
+        
     };
 
     const handleEditProperty = (property) => {
@@ -91,6 +94,22 @@ export default function MyPropertiesPage() {
         fetchData(); // Refresh all data after submitting.
     };
 
+    const handleAddPropertyClick = () => {
+        const limits = { FREE: 3, PRO: 50 };
+        const userLimit = userProfile ? limits[userProfile.subscription] : 0;
+        // Use the accurate count from the backend, not the length of the current property list
+        const propertiesPosted = userProfile ? userProfile.propertiesPostedThisMonth : 0;
+
+        if (propertiesPosted >= userLimit) {
+            alert('You have reached your monthly listing limit. Please upgrade your plan to add more properties.');
+            router.push('/pricing');
+        } else {
+            setSelectedProperty(null);
+            setShowPropertyForm(true);
+        }
+    };
+
+
     if (authLoading || loading) {
         return <div className="text-center p-8 text-xl text-gray-700">Loading your listings...</div>;
     }
@@ -103,15 +122,16 @@ export default function MyPropertiesPage() {
     // This now checks against the subscription type instead of a fixed number.
     const limits = { FREE: 3, PRO: 50 };
     const userLimit = userProfile ? limits[userProfile.subscription] : 0;
+    const propertiesPosted = userProfile ? userProfile.propertiesPostedThisMonth : 0;
     const hasReachedLimit = myProperties.length >= userLimit;
 
     return (
         <>
-            {/* ADDED: A new status bar to show the user their current listing limit. */}
+            {/* status bar to show the user their current listing limit. */}
             {userProfile && (
                 <div className="p-4 bg-indigo-50 border border-indigo-200 rounded-lg mb-8 text-center">
                     <p className="text-lg text-indigo-800">
-                        You have used <strong>{myProperties.length}</strong> of your <strong>{userLimit}</strong> available free listings this month.
+                        You have used <strong>{propertiesPosted}</strong> of your <strong>{userLimit}</strong> available free listings this month.
                     </p>
                     {userProfile.listingResetDate && (
                         <p className="text-sm text-indigo-600 mt-1">
@@ -123,27 +143,13 @@ export default function MyPropertiesPage() {
 
             <div className="flex justify-between items-center mb-8">
                 <h2 className="text-2xl font-semibold text-gray-800">My Listed Properties</h2>
-                
-                {/* COMMENTED OUT: The old, unconditional "Add New Listing" button. */}
-                {/*
-                <Button onClick={handleAddProperty} className="bg-green-600 hover:bg-green-700 text-white shadow-md">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 inline-block mr-2" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" /></svg>
-                    Add New Listing
+                <Button 
+                    onClick={handleAddPropertyClick} 
+                    className={`${hasReachedLimit ? 'bg-green-600 hover:bg-green-700' : 'bg-indigo-600 hover:bg-indigo-700'} text-white shadow-md`}
+                >
+                    {hasReachedLimit ? 'Upgrade to Add More' : 'Add New Listing'}
                 </Button>
-                */}
-
-                {/* CORRECTED: The button is now conditional. It shows "Add New" if the user is under their limit,
-                    and an "Upgrade" button if they have reached it. */}
-                {hasReachedLimit ? (
-                    <Button onClick={() => router.push('/pricing')} className="bg-green-600 hover:bg-green-700 text-white shadow-md">
-                        Upgrade to Add More
-                    </Button>
-                ) : (
-                    <Button onClick={handleAddProperty} className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-md">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 inline-block mr-2" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" /></svg>
-                        Add New Listing
-                    </Button>
-                )}
+            
             </div>
 
             {showPropertyForm && (
@@ -160,18 +166,18 @@ export default function MyPropertiesPage() {
             {myProperties.length === 0 ? (
                 <p className="text-gray-600 text-lg">You haven't listed any properties yet. Click "Add New Listing" to get started!</p>
             ) : (
-                <div className="bg-white shadow-xl overflow-hidden rounded-xl border border-gray-200">
+               <div className="bg-white dark:bg-gray-900 shadow-xl overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700">
                     <ul className="divide-y divide-gray-200">
                         {myProperties.map(property => (
                             <li key={property.id} className="px-6 py-5 sm:px-8 flex flex-col sm:flex-row justify-between items-start sm:items-center hover:bg-gray-50 transition-colors duration-150">
                                 <div className="flex-grow mb-3 sm:mb-0">
-                                    <p className="text-xl font-medium text-gray-900 leading-tight">
+                                    <p className="text-xl font-medium text-gray-900 dark:text-gray-100 leading-tight">
                                         {property.title} 
-                                        <span className={`ml-2 px-2.5 py-1 rounded-full text-xs font-semibold ${property.status === 'approved' ? 'bg-green-100 text-green-800' : property.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}`}>
+                                        <span className={`ml-2 px-2.5 py-1 rounded-full text-xs font-semibold ${property.status === 'approved' ? ' bg-green-200 text-green-800 dark:bg-green-800 dark:text-green-200' : property.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}`}>
                                             {property.status.toUpperCase()}
                                         </span>
                                     </p>
-                                    <p className="text-base text-gray-600 mt-1">{`${property.area}, ${property.city}`} - {formatBdtPrice(property.price)}</p>
+                                    <p className="text-base text-gray-600 dark:text-gray-400 mt-1">{`${property.area}, ${property.city}`} - {formatBdtPrice(property.price)}</p>
                                 </div>
                                 <div className="flex space-x-3">
                                     <Button

@@ -14,7 +14,7 @@ const AuthLayout = ({ children, type }) => {
         if (type === 'signup') {
             container?.classList.add("active");
         }
-        //co
+        
         else{
             container?.classList.remove("active");
         }
@@ -79,6 +79,44 @@ const AuthLayout = ({ children, type }) => {
                 .container.active .toggle-left { transform: translateX(0); }
                 .toggle-right { right: 0; transform: translateX(0); }
                 .container.active .toggle-right { transform: translateX(200%); }
+
+                .dark .login-page-body {
+                    background: #111827; /* Dark gray background */
+                }
+                .dark .container {
+                    background-color: #1f2937; /* Gray 800 */
+                    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+                    border: 1px solid #374151; /* Gray 700 */
+                }
+                .dark .container form {
+                    background-color: #1f2937; /* Gray 800 */
+                }
+                .dark .container h1 {
+                    color: #ffffff;
+                }
+                .dark .container p, .dark .container span, .dark .container a {
+                    color: #d1d5db; /* Gray 300 */
+                }
+                .dark .container a:hover {
+                    color: #a5b4fc; /* Indigo 300 */
+                }
+                .dark .container input {
+                    background-color: #374151; /* Gray 700 */
+                    color: #ffffff;
+                    border: 1px solid #4b5563; /* Gray 600 */
+                }
+                .dark .container input::placeholder {
+                    color: #9ca3af; /* Gray 400 */
+                }
+                .dark .container button {
+                    background-color: #4f46e5; /* Indigo 600 */
+                }
+                .dark .container button:hover {
+                    background-color: #4338ca; /* Indigo 700 */
+                }
+                .dark .toggle {
+                     background: linear-gradient(to right, #4338ca, #1d4ed8); /* Darker gradient */
+                }
             `}</style>
             <div className="container" id="container">
                 {children}
