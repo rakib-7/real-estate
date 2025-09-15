@@ -2,7 +2,7 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import Link from 'next/link'; // Ensure Link is imported for PropertyCard
+import Link from 'next/link'; 
 import PropertyCard from '@/components/PropertyCard';
 import { useAuth } from '@/context/AuthContext';
 import fetcher from '@/lib/api';
