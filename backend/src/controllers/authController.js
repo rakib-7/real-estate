@@ -5,6 +5,24 @@ const crypto = require('crypto');
 const nodemailer = require('nodemailer');
 // const sgMail = require('@sendgrid/mail');
 const prisma = new PrismaClient();
+const SibApiV3Sdk = require('@sendinblue/client');
+
+
+const brevo = new SibApiV3Sdk.TransactionalEmailsApi();
+brevo.setApiKey(
+  SibApiV3Sdk.TransactionalEmailsApiApiKeys.apiKey,
+  process.env.BREVO_API_KEY
+);
+
+async function sendEmail(to, subject, text) {
+  return brevo.sendTransacEmail({
+    sender: { email: process.env.SENDER_EMAIL, name: "Real Estate Support" },
+    to: [{ email: to }],
+    subject,
+    textContent: text,
+  });
+}
+
 
 exports.register = async (req, res) => {
     const { email, password, name, phoneNumber, location } = req.body;
@@ -27,23 +45,27 @@ exports.register = async (req, res) => {
         });
 
         const verificationURL = `${process.env.FRONTEND_URL}/verify-email?token=${emailVerificationToken}`;
+        // const transporter = nodemailer.createTransport({
+        //     host: process.env.EMAIL_HOST,
+        //     port: process.env.EMAIL_PORT,
+        //     secure: false, 
+        //     auth: {
+        //         user: process.env.EMAIL_USER,
+        //         pass: process.env.EMAIL_PASS,
+        //     },
+        // });
 
-        const transporter = nodemailer.createTransport({
-            host: process.env.EMAIL_HOST,
-            port: process.env.EMAIL_PORT,
-            secure: true, 
-            auth: {
-                user: process.env.EMAIL_USER,
-                pass: process.env.EMAIL_PASS,
-            },
-        });
-
-        await transporter.sendMail({
-            from: `"Real Estate Support" <${process.env.SENDER_EMAIL}>`,
-            to: user.email,
-            subject: 'Please verify your email address',
-            text: `Welcome! Please verify your email by clicking the following link: ${verificationURL}`,
-        });
+        // await transporter.sendMail({
+        //     from: `"Real Estate Support" <${process.env.SENDER_EMAIL}>`,
+        //     to: user.email,
+        //     subject: 'Please verify your email address',
+        //     text: `Welcome! Please verify your email by clicking the following link: ${verificationURL}`,
+        // });
+        await sendEmail(
+            user.email,
+            'Please verify your email address',
+            `Welcome! Please verify your email by clicking the following link: ${verificationURL}`
+        );
 
         res.status(201).json({ message: 'User registered successfully!' });
     } catch (error) {
@@ -86,7 +108,7 @@ exports.login = async (req, res) => {
 
         res.cookie('token', token, {
             httpOnly: true,
-           // secure: process.env.NODE_ENV === 'production',
+            //secure: process.env.NODE_ENV === 'production',
             secure: true,
             sameSite: 'None',
             maxAge: 3600000,
@@ -191,25 +213,29 @@ exports.forgotPassword = async (req, res) => {
         });
 
         // This is the link that would normally be emailed.
-         const resetURL = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
-
+        const resetURL = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
         
-        const transporter = nodemailer.createTransport({
-            host: process.env.EMAIL_HOST,
-            port: process.env.EMAIL_PORT,
-            secure: true, // true for 465, false for other ports
-            auth: {
-                user: process.env.EMAIL_USER,
-                pass: process.env.EMAIL_PASS,
-            },
-        });
+        // const transporter = nodemailer.createTransport({
+        //     host: process.env.EMAIL_HOST,
+        //     port: process.env.EMAIL_PORT,
+        //     secure: false, // true for 465, false for other ports
+        //     auth: {
+        //         user: process.env.EMAIL_USER,
+        //         pass: process.env.EMAIL_PASS,
+        //     },
+        // });
 
-        await transporter.sendMail({
-            from: `"Real Estate Support" <${process.env.SENDER_EMAIL}>`,
-            to: user.email,
-            subject: 'Your Password Reset Link',
-            text: `You requested a password reset. Click the link to reset your password: ${resetURL}`,
-        });
+        // await transporter.sendMail({
+        //     from: `"Real Estate Support" <${process.env.SENDER_EMAIL}>`,
+        //     to: user.email,
+        //     subject: 'Your Password Reset Link',
+        //     text: `You requested a password reset. Click the link to reset your password: ${resetURL}`,
+        // });
+        await sendEmail(
+      user.email,
+      'Your Password Reset Link',
+      `You requested a password reset. Click here: ${resetURL}`
+    );
         
         // COMMENTED OUT: The old email sending logic.
         /*
@@ -266,6 +292,12 @@ exports.resetPassword = async (req, res) => {
                 passwordResetTokenExpires: null,
             },
         });
+
+        await sendEmail(
+            user.email,
+            'Your password has been changed',
+            `Hello ${user.name || ''},\n\nYour password was successfully changed. If this wasn’t you, please contact support immediately.`
+        );
 
         res.status(200).json({ message: 'Password has been reset successfully. You can now log in.' });
 
