@@ -21,7 +21,7 @@ const server = http.createServer(app);
 const allowedOrigin = process.env.CORS_ORIGIN || 'http://localhost:3000';
 const io = new Server(server, {
     cors: {
-        origin: "allowedOrigin", 
+        origin: allowedOrigin, 
         methods: ["GET", "POST"]
     }
 });
@@ -63,7 +63,7 @@ io.on('connection', (socket) => {
 
 
 // --- API ROUTES ---
-app.get('/api', (req, res) => {
+app.get('/', (req, res) => {
     res.send('Real Estate Management System Backend API is running!');
 });
 app.get("/api/keep-alive", (req, res) => {
